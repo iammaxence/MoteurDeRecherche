@@ -1,0 +1,198 @@
+package com.mdr.MoteurDeRecherche.Utils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class Indexation {
+
+
+    public static void main(String[] args) throws Exception {
+        /* Create an index for a File */
+        //indexBookToFile(1342);
+
+        /* Test */
+
+        /*Map<Integer,Integer> map = getListBooksWithSpecificWord("fit");
+
+        for(Map.Entry<Integer, Integer> s : SortedMapDescending(map).entrySet()){
+            System.out.println(s.getKey()+" : occurence = "+s.getValue());
+        }
+        System.out.println(new JSONObject().put("books",SortedMapDescending(map).keySet()));
+        System.out.println("Fin");*/
+
+    }
+
+    /**
+     * Index a book
+     * @param id : id of a book
+     * @throws IOException
+     * @return The index of a book -> {word : [title: occurences] }
+     */
+    public static Map<String,Pair<Integer, Integer>> indexBook(int id) throws IOException {
+        // [mot :[title: occurence]]
+        Map<String,Pair<Integer, Integer>> index = new HashMap<String,Pair<Integer, Integer>>();
+
+        File book = new File("src/main/java/com/mdr/MoteurDeRecherche/Books/"+id+".txt");
+        Scanner readbook = new Scanner(book);
+        while (readbook.hasNext()) {
+            String mot =readbook.next().replaceAll("\\p{Punct}", "");
+            //Si le mot est juste de la ponctuation, on passe au tour suivant
+            if(mot.isEmpty())
+                continue;
+            Pair<Integer, Integer> myword;
+
+            if(index.containsKey(mot)){
+
+                Pair<Integer, Integer> theword = index.get(mot);
+                int currentOccurence= theword.getValue()+1; // Get occurence du mot
+                //System.out.println(mot+" : "+currentOccurence);
+                myword = new Pair(id, currentOccurence);
+            }
+            else {
+                myword = new Pair<Integer,Integer>(id,1);
+            }
+            index.put(mot,myword);
+        }
+
+        readbook.close();
+        //index => All the words with their occurences
+        return index;
+
+    }
+
+    /**
+     * Index a book
+     * @param id : id of the book
+     * @throws IOException
+     */
+    public static void indexBookToFile(int id) throws IOException {
+        // [mot :[title: occurence]]
+        Map<String,Pair<Integer, Integer>> index = new HashMap<String,Pair<Integer, Integer>>();
+
+        File book = new File("src/main/java/com/mdr/MoteurDeRecherche/Books/"+id+".txt");
+        Scanner readbook = new Scanner(book);
+        while (readbook.hasNext()) {
+            String mot =readbook.next().replaceAll("\\p{Punct}", "");
+            //Si le mot est juste de la ponctuation, on passe au tour suivant
+            if(mot.isEmpty())
+                continue;
+            Pair<Integer, Integer> myword;
+
+            if(index.containsKey(mot)){
+
+                Pair<Integer, Integer> theword = index.get(mot);
+                int currentOccurence= theword.getValue()+1; // Get occurence du mot
+                //System.out.println(mot+" : "+currentOccurence);
+                myword = new Pair(id, currentOccurence);
+            }
+            else {
+                myword = new Pair<Integer,Integer>(id,1);
+            }
+            index.put(mot,myword);
+        }
+
+        readbook.close();
+        //index => All the words with their occurences
+        writeIntoFile(index,id);
+
+    }
+
+    /**
+     *
+     * @param word
+     * @return A map -> [nameOfTheBook : OccurenceOfTheWord]
+     * @throws Exception
+     */
+    public static Map<Integer,Integer> getListBooksWithSpecificWord(String word) throws Exception {
+        Map<Integer,Integer> books = new HashMap<Integer,Integer>(); // NameOfTheBook : OccurenceOfTheWord
+
+        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        for (final File indexBook : folder.listFiles()) {
+            if (indexBook.isDirectory()) {
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
+            } else {
+                int id = Integer.parseInt(indexBook.getName().replace(".dex","")); //Id of the book
+                int occurence = getOccurenceOfWordInFile(indexBook,word);
+                if(occurence>0)
+                    books.put(id,occurence);
+            }
+        }
+        //Ordonnée par ordre décroissant: A faire
+        return books;
+    }
+
+    /**
+     *
+     * @param IndexBook
+     * @param word
+     * @return
+     * @throws FileNotFoundException
+     */
+    private static int getOccurenceOfWordInFile(File IndexBook, String word) throws FileNotFoundException {
+        //Le pattern matching d'une ligne d'un index
+        Pattern p = Pattern.compile("^"+word+" : \\[.* : (.*)\\]");
+        int occurence=0;
+
+        Scanner readbook = new Scanner(IndexBook);
+        while (readbook.hasNext()) {
+            Matcher m = p.matcher(readbook.nextLine());
+
+            if(m.find()) { // Il faut faire le find() avant le m.matches() (Pourquoi ? Magic)
+                m.matches(); //Toujours faire m.matches avant de faire m.groupe() (Je sais pas pourquoi?)
+                occurence = Integer.parseInt(m.group(1)); //On récupère l'occurence du mot dans le texte
+                return occurence;
+            }
+
+        }
+        return -1;
+    }
+
+    /**
+     * write an index into a text file (In the package : IndexBooks)
+     * @param index
+     * @param id : id of the book
+     * @throws IOException
+     */
+    private static void writeIntoFile(Map<String,Pair<Integer, Integer>> index, int id)
+            throws IOException
+    {
+        int cpt=0;
+        FileWriter writer = new FileWriter(
+                        "src/main/java/com/mdr/MoteurDeRecherche/IndexBooks/"+id+".dex");
+        index.forEach((k,v) -> {
+            String key = k;
+            int occurence = v.getValue();
+            try {
+                writer.write(key + " : [" + id + " : " + occurence + "]" + "\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        writer.close();
+    }
+
+    /**
+     *
+     * @param mymap
+     * @return mymap sorted in a descending order
+     */
+    public static LinkedHashMap<Integer, Integer> SortedMapDescending(Map<Integer, Integer> mymap){
+        //LinkedHashMap : Préserver l'ordre des élémenents
+        LinkedHashMap<Integer, Integer> reverseSortedMap = new LinkedHashMap<>();
+
+        //Use Comparator.reverseOrder() for reverse ordering
+        mymap.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
+        return reverseSortedMap;
+    }
+
+
+
+}

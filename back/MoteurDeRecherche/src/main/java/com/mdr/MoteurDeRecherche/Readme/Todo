@@ -1,0 +1,6 @@
+-> Corriger la récupération de mots dans une phrase
+    -> Des mots comme "fois.", "fois," au lieu de "fois"
+-> Faire un trie des occurences (Decroissant)
+-> Corriger les titres trop long (sinon erreur) : Certains titre sont à rallonge avec un ";" et d'autre avec un ":"
+    exemple : Le livre de Gutemberg: 1498-1700, bla bla bla bla bla bla bla...
+-> Recuperer l'image d'un livre
