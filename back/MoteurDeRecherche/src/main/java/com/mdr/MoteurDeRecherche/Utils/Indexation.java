@@ -5,17 +5,29 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Indexation {
-
+    private static ExecutorService executorService = new ThreadPoolExecutor(
+            4,
+            4,
+            60,
+            TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
     public static void main(String[] args) throws Exception {
+
+        /* Create index for all the books */
+
+        //indexBookDatabase();
+
         /* Create an index for a File */
+
         //indexBookToFile(1342);
 
-        /* Test */
+        /* Test occurences of books*/
 
         /*Map<Integer,Integer> map = getListBooksWithSpecificWord("fit");
 
@@ -27,11 +39,27 @@ public class Indexation {
 
     }
 
+    public static void indexBookDatabase() throws Exception {
+        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/Books");
+        int cpt= 0;
+        for (final File indexBook : folder.listFiles()) {
+            System.out.println("Indexation en cours : "+cpt+"/"+folder.listFiles().length);
+            cpt++;
+            if (indexBook.isDirectory()) {
+                throw new Exception("Error Indexation.java : No folder expected in the directory : Books");
+            } else {
+                int id = Integer.parseInt(indexBook.getName().replace(".txt","")); //Id of the book
+                indexBookToFile(id);
+            }
+        }
+
+    }
+
     /**
      * Index a book
      * @param id : id of a book
      * @throws IOException
-     * @return The index of a book -> {word : [title: occurences] }
+     * @return The index of a book -> {word : [idOfTheBook : occurences] }
      */
     public static Map<String,Pair<Integer, Integer>> indexBook(int id) throws IOException {
         // [mot :[title: occurence]]
@@ -98,6 +126,7 @@ public class Indexation {
 
         readbook.close();
         //index => All the words with their occurences
+        // Trie dans l'ordre décroissant
         writeIntoFile(index,id);
 
     }
@@ -108,8 +137,8 @@ public class Indexation {
      * @return A map -> [nameOfTheBook : OccurenceOfTheWord]
      * @throws Exception
      */
-    public static Map<Integer,Integer> getListBooksWithSpecificWord(String word) throws Exception {
-        Map<Integer,Integer> books = new HashMap<Integer,Integer>(); // NameOfTheBook : OccurenceOfTheWord
+    public static ConcurrentHashMap<Integer,Integer> getListBooksWithSpecificWord(String word) throws Exception {
+        ConcurrentHashMap<Integer,Integer> books = new ConcurrentHashMap<Integer,Integer>(); // NameOfTheBook : OccurenceOfTheWord
 
         File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
         for (final File indexBook : folder.listFiles()) {
@@ -117,12 +146,30 @@ public class Indexation {
                 throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
             } else {
                 int id = Integer.parseInt(indexBook.getName().replace(".dex","")); //Id of the book
-                int occurence = getOccurenceOfWordInFile(indexBook,word);
+
+                //Multithreading
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        AtomicInteger occurence = new AtomicInteger(-1);
+                        try {
+                            occurence = getOccurenceOfWordInFile(indexBook,word);
+                            if(occurence.intValue()>0)
+                                books.put(id,occurence.intValue());
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                /*int occurence = getOccurenceOfWordInFile(indexBook,word);
                 if(occurence>0)
-                    books.put(id,occurence);
+                    books.put(id,occurence);*/
             }
         }
         //Ordonnée par ordre décroissant: A faire
+        executorService.shutdown();
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
         return books;
     }
 
@@ -133,10 +180,10 @@ public class Indexation {
      * @return
      * @throws FileNotFoundException
      */
-    private static int getOccurenceOfWordInFile(File IndexBook, String word) throws FileNotFoundException {
+    private static AtomicInteger getOccurenceOfWordInFile(File IndexBook, String word) throws FileNotFoundException {
         //Le pattern matching d'une ligne d'un index
         Pattern p = Pattern.compile("^"+word+" : \\[.* : (.*)\\]");
-        int occurence=0;
+        AtomicInteger occurence= new AtomicInteger(0);
 
         Scanner readbook = new Scanner(IndexBook);
         while (readbook.hasNext()) {
@@ -144,12 +191,12 @@ public class Indexation {
 
             if(m.find()) { // Il faut faire le find() avant le m.matches() (Pourquoi ? Magic)
                 m.matches(); //Toujours faire m.matches avant de faire m.groupe() (Je sais pas pourquoi?)
-                occurence = Integer.parseInt(m.group(1)); //On récupère l'occurence du mot dans le texte
+                occurence = new AtomicInteger(Integer.parseInt(m.group(1))); //On récupère l'occurence du mot dans le texte
                 return occurence;
             }
 
         }
-        return -1;
+        return new AtomicInteger(-1);
     }
 
     /**
@@ -192,6 +239,7 @@ public class Indexation {
                 .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
         return reverseSortedMap;
     }
+
 
 
 

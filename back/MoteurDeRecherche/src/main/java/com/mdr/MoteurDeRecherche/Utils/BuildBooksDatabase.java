@@ -12,15 +12,26 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BuildBooksDatabase {
 
-    public static void main(String[] args) throws IOException, JSONException {
+    private static ExecutorService executorService = new ThreadPoolExecutor(
+            4,
+            4,
+            1,
+            TimeUnit.HOURS, new LinkedBlockingQueue<Runnable>());
+
+    public static void main(String[] args) throws IOException, JSONException, InterruptedException {
         // Decommenter la ligne du bas pour lancer le téléchargement de la database
 
-        System.out.println(buildBooksDatabase().size());
+        System.out.println(buildBooksDatabase(500).size());
         /*String line = "Bonjour, je suis un test! Ca marche. 1.Monsieur";
         System.out.println(line.replaceAll("\\p{Punct}", ""));*/
     }
@@ -31,11 +42,11 @@ public class BuildBooksDatabase {
      * @throws IOException
      * @throws JSONException
      */
-    public static ArrayList<Integer> buildBooksDatabase() throws IOException, JSONException {
+    public static ArrayList<Integer> buildBooksDatabase(int nbBooks) throws IOException, JSONException, InterruptedException {
         ArrayList<Integer> listofBooksIds= new ArrayList<Integer>();
-        int cpt=1;
-        while (listofBooksIds.size()<4){
-            listofBooksIds.addAll(auxBuildBooksDatabase(cpt,4));
+        int cpt=1; //AtomicInteger ici
+        while (listofBooksIds.size()<nbBooks){
+            listofBooksIds.addAll(auxBuildBooksDatabase(cpt,nbBooks));
             System.out.println("Books done = "+listofBooksIds.size()+"/1664");
             cpt++;
         }
@@ -101,7 +112,7 @@ public class BuildBooksDatabase {
      * @throws IOException
      * @throws JSONException
      */
-    private static ArrayList<Integer> auxBuildBooksDatabase(int page,int nbbooks) throws IOException, JSONException {
+    private static ArrayList<Integer> auxBuildBooksDatabase(int page,int nbbooks) throws IOException, JSONException, InterruptedException {
 
         ArrayList<Integer> listofBooksIds= new ArrayList<Integer>();
 
@@ -130,20 +141,31 @@ public class BuildBooksDatabase {
         JSONObject contentJson = new JSONObject(content.toString());
         JSONArray jsonArray = contentJson.getJSONArray("results");
         for(int i=0;i<jsonArray.length();i++){
-            int id = jsonArray.getJSONObject(i).getInt("id");
+            AtomicInteger id = new AtomicInteger(jsonArray.getJSONObject(i).getInt("id"));
             String title = jsonArray.getJSONObject(i).getString("title");
 
             if(listofBooksIds.size()>=nbbooks)
                 return listofBooksIds;
 
-            if (countWordsIdBook(id)) {
-                System.out.println("L'id = "+id);
-                listofBooksIds.add(id);
-                downloadBook("http://www.gutenberg.org/files/"+id+"/"+id+"-0.txt",
-                        id);
+            if (countWordsIdBook(id.intValue())) { //Books must have number of words to be over 10 000
+                System.out.println("L'id = "+id.intValue());
+                listofBooksIds.add(id.intValue());
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            downloadBook("http://www.gutenberg.org/files/"+id+"/"+id+"-0.txt",
+                                    id.intValue());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
             }
         }
-
+        executorService.shutdown();
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
         return listofBooksIds;
     }
 
