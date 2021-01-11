@@ -31,13 +31,13 @@ public class BuildBooksDatabase {
     public static void main(String[] args) throws IOException, JSONException, InterruptedException {
         // Decommenter la ligne du bas pour lancer le téléchargement de la database
 
-        System.out.println(buildBooksDatabase(500).size());
+        System.out.println(buildBooksDatabase(2000).size());
         /*String line = "Bonjour, je suis un test! Ca marche. 1.Monsieur";
         System.out.println(line.replaceAll("\\p{Punct}", ""));*/
     }
 
     /**
-     * Build a book Database (in the package Books)
+     * Build a book Database (in the package Books) (Estimate time : 55 min for 2000 books)
      * @return List of books that have been create
      * @throws IOException
      * @throws JSONException
@@ -50,7 +50,8 @@ public class BuildBooksDatabase {
             System.out.println("Books done = "+listofBooksIds.size()+"/1664");
             cpt++;
         }
-
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.DAYS);
         return listofBooksIds;
     }
 
@@ -97,7 +98,7 @@ public class BuildBooksDatabase {
                 System.out.println("L'id = "+id);
                 listofBooksIds.add(id);
                 downloadBook("http://www.gutenberg.org/files/"+id+"/"+id+"-0.txt",
-                            id);
+                        id);
             }
         }
 
@@ -164,8 +165,7 @@ public class BuildBooksDatabase {
 
             }
         }
-        executorService.shutdown();
-        executorService.awaitTermination(3, TimeUnit.SECONDS);
+
         return listofBooksIds;
     }
 
@@ -177,32 +177,32 @@ public class BuildBooksDatabase {
     private static boolean countWordsIdBook(int idbook){
         String urlbook = "http://www.gutenberg.org/files/"+idbook+"/"+idbook+"-0.txt";
         try {
-        URL url = new URL(urlbook);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            URL url = new URL(urlbook);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
 
-        con.setRequestMethod("GET");
-        con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestMethod("GET");
+            con.setRequestProperty("Content-Type", "application/json");
 
-        //Read status
-        int status = con.getResponseCode();
+            //Read status
+            int status = con.getResponseCode();
 
-        //Read response
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        int comptemot=0;
+            //Read response
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            int comptemot=0;
 
-        while ((inputLine = in.readLine()) != null) {
-            comptemot+= countWords(inputLine);
-        }
-        //Close buffer
-        in.close();
+            while ((inputLine = in.readLine()) != null) {
+                comptemot+= countWords(inputLine);
+            }
+            //Close buffer
+            in.close();
 
-        //Disconnect
-        con.disconnect();
+            //Disconnect
+            con.disconnect();
 
-       return (comptemot>=10000);
+            return (comptemot>=10000);
 
         } catch (MalformedURLException e) {
             return false;
