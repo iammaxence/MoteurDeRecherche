@@ -11,7 +11,11 @@ import java.util.Set;
 public class search {
 
     public static void main(String[] args) throws Exception {
+        long before = System.currentTimeMillis();
         System.out.println(rechercheClassique("fit"));
+        long after = System.currentTimeMillis();
+        double total = after-before;
+        System.out.println("Temps : "+total/1000);
     }
 
     /**
@@ -22,6 +26,7 @@ public class search {
      */
     public static JSONObject rechercheClassique(String word) throws Exception {
         Set res = new HashSet<>();
+        // Map<IdBooks,occurence>
         Map<Integer,Integer> map = Indexation.getListBooksWithSpecificWord(word);
 
         //Conversion id en titre : Soit on le fait ici, soit dans le javascript (Average time = 51 sec)

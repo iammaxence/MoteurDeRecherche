@@ -21,7 +21,7 @@ public class Indexation {
 
         /* Create index for all the books */
 
-        //indexBookDatabase();
+        indexBookDatabase();
 
         /* Create an index for a File */
 
@@ -210,7 +210,7 @@ public class Indexation {
     {
         int cpt=0;
         FileWriter writer = new FileWriter(
-                        "src/main/java/com/mdr/MoteurDeRecherche/IndexBooks/"+id+".dex");
+                "src/main/java/com/mdr/MoteurDeRecherche/IndexBooks/"+id+".dex");
         index.forEach((k,v) -> {
             String key = k;
             int occurence = v.getValue();
