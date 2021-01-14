@@ -4,6 +4,7 @@ import com.mdr.MoteurDeRecherche.Utils.BookInfo;
 import com.mdr.MoteurDeRecherche.Utils.Indexation;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -37,5 +38,36 @@ public class search {
         }*/
 
         return new JSONObject().put("books",Indexation.SortedMapDescending(map).keySet());
+    }
+
+    /**
+     * Search books from a list of key word
+     * @param words
+     * @return
+     * @throws Exception
+     */
+    public static JSONObject rechercheMotsClefs(ArrayList<String> words) throws Exception {
+        // A FAIRE
+        return new JSONObject().put("books",null);
+    }
+
+    /**
+     * Search books where there is a match with the regex
+     * @param regex
+     * @return
+     * @throws Exception
+     */
+    public static JSONObject rechercheRegex(String regex) throws Exception {
+        if(regex.isEmpty()){
+            return new JSONObject().put("error","empty regex");
+        }
+        //If it's really a regex them proceed
+        if(regex.contains("|") || regex.contains("*") || regex.contains("+")){
+            ArrayList<Integer> books = Indexation.getBooksFromRegex(regex);
+            return new JSONObject().put("books",books);
+        }
+        //If it's a word then we use classic search
+        regex = regex.replaceAll("[.()]", "");
+        return rechercheClassique(regex);
     }
 }

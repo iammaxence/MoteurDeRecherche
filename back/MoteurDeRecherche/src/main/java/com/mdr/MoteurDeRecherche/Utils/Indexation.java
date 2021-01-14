@@ -240,7 +240,50 @@ public class Indexation {
         return reverseSortedMap;
     }
 
+    /**
+     * Get the list of books from a regex
+     * @param regex
+     * @return the list of books that match the regex
+     */
+    public static ArrayList<Integer> getBooksFromRegex(String regex) throws Exception{
+        ArrayList<Integer> books = new ArrayList<>();
+        Pattern p = Pattern.compile(regex);
 
+        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        for (final File indexBook : folder.listFiles()) {
+            if (indexBook.isDirectory()) {
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
+            } else {
+                int id = Integer.parseInt(indexBook.getName().replace(".dex","")); //Id of the book
+
+                //Multithreading
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Scanner readbook = new Scanner(indexBook);
+                            Matcher m;
+                            while (readbook.hasNext()) {
+                                //look if the word match : true -> add book
+                                m = p.matcher(readbook.nextLine().split(" ")[0]);
+                                if(m.find()) {
+                                    books.add(id);
+                                    break;
+                                }
+                            }
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
+        //Ordonnée par ordre décroissant: A faire
+        executorService.shutdown();
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
+
+        return books;
+    }
 
 
 }
