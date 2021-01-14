@@ -247,7 +247,7 @@ public class Indexation {
      */
     public static ArrayList<Integer> getBooksFromRegex(String regex) throws Exception{
         ArrayList<Integer> books = new ArrayList<>();
-        Pattern p = Pattern.compile(regex);
+        Pattern p = Pattern.compile("^"+regex+"$");
 
         File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
         for (final File indexBook : folder.listFiles()) {
