@@ -245,8 +245,8 @@ public class Indexation {
      * @param regex
      * @return the list of books that match the regex
      */
-    public static ArrayList<Integer> getBooksFromRegex(String regex) throws Exception{
-        ArrayList<Integer> books = new ArrayList<>();
+    public static List<Integer> getBooksFromRegex(String regex) throws Exception{
+        List<Integer> books = Collections.synchronizedList(new ArrayList<>());
         Pattern p = Pattern.compile("^"+regex+"$");
 
         File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
@@ -285,5 +285,10 @@ public class Indexation {
         return books;
     }
 
+    public static ConcurrentHashMap<Integer,Integer> getBooksFromKeysWords(ArrayList<String> words){
+        ConcurrentHashMap<Integer,Integer> books = new ConcurrentHashMap<Integer,Integer>();
+
+        return books;
+    }
 
 }

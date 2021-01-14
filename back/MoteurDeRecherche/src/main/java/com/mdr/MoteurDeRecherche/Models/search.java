@@ -4,10 +4,7 @@ import com.mdr.MoteurDeRecherche.Utils.BookInfo;
 import com.mdr.MoteurDeRecherche.Utils.Indexation;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class search {
 
@@ -47,8 +44,13 @@ public class search {
      * @throws Exception
      */
     public static JSONObject rechercheMotsClefs(ArrayList<String> words) throws Exception {
-        // A FAIRE
-        return new JSONObject().put("books",null);
+        if(words.isEmpty()){
+            return new JSONObject().put("error","empty key word");
+        }
+        //List of book without double
+        Map<Integer,Integer> map = Indexation.getBooksFromKeysWords(words);
+
+        return new JSONObject().put("books",Indexation.SortedMapDescending(map).keySet());
     }
 
     /**
@@ -63,7 +65,7 @@ public class search {
         }
         //If it's really a regex them proceed
         if(regex.contains("|") || regex.contains("*") || regex.contains("+")){
-            ArrayList<Integer> books = Indexation.getBooksFromRegex(regex);
+            List<Integer> books = Indexation.getBooksFromRegex(regex);
             return new JSONObject().put("books",books);
         }
         //If it's a word then we use classic search
