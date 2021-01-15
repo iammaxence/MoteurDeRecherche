@@ -4,11 +4,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.time.Clock;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Indexation {
     private static ExecutorService executorService = new ThreadPoolExecutor(
@@ -285,10 +287,79 @@ public class Indexation {
         return books;
     }
 
-    public static ConcurrentHashMap<Integer,Integer> getBooksFromKeysWords(ArrayList<String> words){
-        ConcurrentHashMap<Integer,Integer> books = new ConcurrentHashMap<Integer,Integer>();
+    /**
+     * Get books from keywords
+     * @param words List of keywords
+     * @return books (map) : key = idBook, value = Pair(number of keys words, sum of occurrence)
+     * @throws Exception
+     */
+    public static ConcurrentHashMap<Integer,Pair<Integer,Integer>> getBooksFromKeysWords(List<String> words) throws Exception{
+        //books : key = idBook, value = Pair(number of keys words, sum of occurrence)
+        ConcurrentHashMap<Integer,Pair<Integer,Integer>> books = new ConcurrentHashMap<Integer,Pair<Integer,Integer>>();
+
+        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        for (final File indexBook : folder.listFiles()) {
+            if (indexBook.isDirectory()) {
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
+            } else {
+                int id = Integer.parseInt(indexBook.getName().replace(".dex","")); //Id of the book
+
+                //Multithreading
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        int keywords = 0;
+                        int sumocc = 0;
+                        String word, line,occ;
+                        try {
+                            Scanner readbook = new Scanner(indexBook);
+                            while (readbook.hasNext()) {
+                                line = readbook.nextLine();
+                                word = line.split(" ")[0].toLowerCase();
+                                for (String w: words) {
+                                    if(w.equals(word)){
+                                        keywords++;
+                                        occ = line.split(" ")[4].replace("]",""); // because there is a ']' in the end of the string
+                                        sumocc += Integer.parseInt(occ);
+                                        //System.out.println(id+" : "+w+ " -> "+occ);
+                                        break;
+                                    }
+                                }
+
+                            }
+                            //books.put(id,new Pair<Integer,Integer>(keywords.get(),sumocc.get()));
+                            books.put(id,new Pair<Integer,Integer>(keywords,sumocc));
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
+        //Ordonnée par ordre décroissant: A faire
+        executorService.shutdown();
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
 
         return books;
     }
+
+    public static LinkedHashMap<Integer, Pair<Integer, Integer>> sortedBooksFromKeywords(ConcurrentHashMap<Integer,Pair<Integer,Integer>> books){
+        //LinkedHashMap : Préserver l'ordre des élémenents
+        LinkedHashMap<Integer, Pair<Integer, Integer>> sortedMap;
+
+        //Use Comparator.reverseOrder() for reverse ordering
+        sortedMap = books.entrySet()
+                         .stream()
+                         .sorted((b1,b2) -> compare(b1.getValue(),b2.getValue()))
+                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1,e2) -> e1, LinkedHashMap::new));
+
+        return sortedMap;
+    }
+
+    private static int compare(Pair<Integer,Integer> p1, Pair<Integer,Integer> p2) {
+        return p1.getKey() == p2.getKey()? p2.getValue() - p1.getValue() : p2.getKey() - p1.getKey();
+    }
+
+
 
 }

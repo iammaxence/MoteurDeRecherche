@@ -2,15 +2,20 @@ package com.mdr.MoteurDeRecherche.Models;
 
 import com.mdr.MoteurDeRecherche.Utils.BookInfo;
 import com.mdr.MoteurDeRecherche.Utils.Indexation;
+import com.mdr.MoteurDeRecherche.Utils.Pair;
 import org.json.JSONObject;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class search {
 
     public static void main(String[] args) throws Exception {
         long before = System.currentTimeMillis();
-        System.out.println(rechercheClassique("fit"));
+        //System.out.println(rechercheClassique("fit"));
+        List<String> words = Arrays.asList("fit", "turn", "role");
+        System.out.println(rechercheMotsClefs(words));
         long after = System.currentTimeMillis();
         double total = after-before;
         System.out.println("Temps : "+total/1000);
@@ -43,14 +48,18 @@ public class search {
      * @return
      * @throws Exception
      */
-    public static JSONObject rechercheMotsClefs(ArrayList<String> words) throws Exception {
+    public static JSONObject rechercheMotsClefs(List<String> words) throws Exception {
         if(words.isEmpty()){
             return new JSONObject().put("error","empty key word");
         }
         //List of book without double
-        Map<Integer,Integer> map = Indexation.getBooksFromKeysWords(words);
 
-        return new JSONObject().put("books",Indexation.SortedMapDescending(map).keySet());
+        ConcurrentHashMap<Integer, Pair<Integer,Integer>> map;
+        map = Indexation.getBooksFromKeysWords(words.stream().map(String::toLowerCase).collect(Collectors.toList()));
+
+        //Rank by number of key word
+
+        return new JSONObject().put("books",Indexation.sortedBooksFromKeywords(map));
     }
 
     /**
