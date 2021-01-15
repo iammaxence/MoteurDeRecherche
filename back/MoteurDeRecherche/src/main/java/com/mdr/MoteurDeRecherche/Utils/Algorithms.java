@@ -1,9 +1,7 @@
 package com.mdr.MoteurDeRecherche.Utils;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,17 +17,31 @@ public class Algorithms {
             cpt++;
         }
         System.out.println("Compteur: "+cpt);*/
-        Map<String,Integer> f1= readFileToMap(1);
+
+        File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
+        for (final File f1 : folder.listFiles()) {
+            Map<String,Integer> map1= readFileToMap(f1);
+
+            for (final File f2 : folder.listFiles()) {
+                Map<String,Integer> map2= readFileToMap(f2);
+
+                double res = distanceJaccard(map1.keySet(),map2.keySet());
+                System.out.println("distanceJaccard : "+res);
+            }
+
+        }
+
+       /* Map<String,Integer> f1= readFileToMap(1);
         Map<String,Integer> f2= readFileToMap(1);
         int cpt=0;
         //f2.keySet().forEach(x -> System.out.println(x));
 
 
-        double res = distanceJaccard(f1,f2);
-        System.out.println("distanceJaccard : "+res);
+        double res = distanceJaccard(f1.keySet(),f2.keySet());
+        System.out.println("distanceJaccard : "+res);*/
     }
 
-    //File to Map
+
     public static void createVertexForAllIndexBooks() throws Exception {
         double before = System.currentTimeMillis();
         int cpt = 1;
@@ -123,6 +135,25 @@ public class Algorithms {
         } catch(Exception e) {}
     }
 
+    public static HashMap<String,Integer> readFileToMap(File file) throws Exception {
+        //read from file
+        HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
+        try {
+
+            FileInputStream fis=new FileInputStream(file);
+            ObjectInputStream ois=new ObjectInputStream(fis);
+
+            mapInFile=(HashMap<String,Integer>)ois.readObject();
+
+            ois.close();
+            fis.close();
+            //print All data in MAP
+            return mapInFile;
+        } catch(Exception e) {}
+
+        throw new Exception("NOT HERE");
+    }
+
     public static HashMap<String,Integer> readFileToMap(int idbook) throws Exception {
         //read from file
         String pathfile = "src/main/java/com/mdr/MoteurDeRecherche/IndexMap/"+idbook+".map";
@@ -145,46 +176,23 @@ public class Algorithms {
 
     //Jaccard Algorithms
 
-
-    /** A REVOIR
+    /**
      * distance jaccard = (|A U B| - |A n B|)/ |A U B|
      * @param f1
      * @param f2
      * @return
      */
-     static public double distanceJaccard(Map<String, Integer> f1, Map<String,Integer> f2) {
-        AtomicInteger max = new AtomicInteger();
-        AtomicInteger diff = new AtomicInteger();
+    static public double distanceJaccard(Set<String> f1, Set<String>  f2) {
 
-         //On récupère la map f1 dans ff1
-         Map<String, Integer> ff1=f1.entrySet()
-                 .parallelStream()
-                 .collect(Collectors.toMap(Map.Entry::getKey,
-                         Map.Entry::getValue));
-        
-         //On récupère la map f1 dans ff2
-         Map<String, Integer> ff2 =f2.entrySet()
-                 .parallelStream()
-                 .collect(Collectors.toMap(Map.Entry::getKey,
-                         Map.Entry::getValue));
+        //Garanti pas le type du set (Si problème, à changer)
+        Set<String> intersection = f1.parallelStream()
+                .collect(Collectors.toSet());;
+        intersection.retainAll(f2);
 
-         // Union de f1 et f2 -> ff1
-         f2.keySet().parallelStream().forEach(x->{ if (f1.get(x)==null)
-             ff1.put(x, 0);});
-         f1.keySet().parallelStream().forEach(x->{ if (f2.get(x)==null)
-             ff2.put(x, 0);});
-         AtomicInteger cpt= new AtomicInteger();
-         ff2.keySet().parallelStream().forEach(x->{
+        double union = f1.size() + f2.size() - intersection.size();
 
-             if(ff2.get(x) !=null && ff1.get(x)!=null) {
-                 diff.addAndGet((Integer) Math.abs(ff2.get(x) - ff1.get(x)));
-                 max.addAndGet((Integer) Math.max(ff2.get(x), ff1.get(x)));
-             }
-
-         } );
-
-         return diff.doubleValue()/max.doubleValue();
-
+        //System.out.println("Union : "+union+ " intersection : "+intersection.size());
+        return (union - intersection.size()) / union;
     }
 
 }
