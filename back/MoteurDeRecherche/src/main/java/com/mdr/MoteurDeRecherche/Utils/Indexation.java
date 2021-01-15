@@ -70,10 +70,11 @@ public class Indexation {
         File book = new File("src/main/java/com/mdr/MoteurDeRecherche/Books/"+id+".txt");
         Scanner readbook = new Scanner(book);
         while (readbook.hasNext()) {
-            String mot =readbook.next().replaceAll("\\p{Punct}", "");
+            String mot = readbook.next().replaceAll("\\p{Punct}", "").replaceAll("`","");
             //Si le mot est juste de la ponctuation, on passe au tour suivant
             if(mot.isEmpty())
                 continue;
+            mot = mot.toLowerCase();
             Pair<Integer, Integer> myword;
 
             if(index.containsKey(mot)){
@@ -107,7 +108,8 @@ public class Indexation {
         File book = new File("src/main/java/com/mdr/MoteurDeRecherche/Books/"+id+".txt");
         Scanner readbook = new Scanner(book);
         while (readbook.hasNext()) {
-            String mot =readbook.next().replaceAll("\\p{Punct}", "");
+            String mot =readbook.next().replaceAll("\\p{Punct}", "")
+                    .replaceAll("[\"\']", "").toLowerCase();
             //Si le mot est juste de la ponctuation, on passe au tour suivant
             if(mot.isEmpty())
                 continue;
@@ -315,7 +317,7 @@ public class Indexation {
                             Scanner readbook = new Scanner(indexBook);
                             while (readbook.hasNext()) {
                                 line = readbook.nextLine();
-                                word = line.split(" ")[0].toLowerCase();
+                                word = line.split(" ")[0];
                                 for (String w: words) {
                                     if(w.equals(word)){
                                         keywords++;
@@ -325,7 +327,6 @@ public class Indexation {
                                         break;
                                     }
                                 }
-
                             }
                             //books.put(id,new Pair<Integer,Integer>(keywords.get(),sumocc.get()));
                             books.put(id,new Pair<Integer,Integer>(keywords,sumocc));
