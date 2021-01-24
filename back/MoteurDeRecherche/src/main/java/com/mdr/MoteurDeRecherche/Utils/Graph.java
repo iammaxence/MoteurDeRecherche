@@ -10,8 +10,12 @@ public class Graph {
         Map<Integer,Integer> futureIndex = new HashMap<>();
 
         public static void main(String[] args) throws Exception {
-            //Graph g = new Graph();
-            //System.out.println(g.toString());
+            Graph g = Graph.createIndexGraph();
+            g.addEdge(1,20);
+            g.addEdge(16,24);
+            g.addEdge(1,24);
+            System.out.println(g.toString());
+            g.graphToFile("src/main/java/com/mdr/MoteurDeRecherche/GraphJaccard/graph.txt");
         }
 
         public Graph(Map<Integer, Set<Integer>> adjacents) {
@@ -83,7 +87,7 @@ public class Graph {
          * @param fileName
          * @throws IOException
          */
-        public void GraphToFile(String fileName) throws IOException {
+        public void graphToFile(String fileName) throws IOException {
             OutputStream flux=new FileOutputStream(fileName);
             OutputStreamWriter ecriture = new OutputStreamWriter(flux);
             BufferedWriter buff=new BufferedWriter(ecriture);
@@ -99,88 +103,6 @@ public class Graph {
             }finally {
                 buff.close();
             }
-        }
-
-        //return true if graph is strongly connex, false otherwise
-        public boolean isConnex() {
-            /*boolean[] marked = new boolean[size()];
-            for(int i = 0; i < size(); i++) {
-                marked[i] = false;
-            }
-            Stack<Integer> p = new Stack<>();
-            //strong hypothesis here ... vertice indexes go from 0 to n-1
-            p.add(0);
-            while(!p.isEmpty()) {
-                int n = p.pop();
-                marked[n] = true;
-                for(Integer v : voisins(n)) {
-                    if(!marked[v]) {
-                        marked[v] = true;
-                        p.add(v);
-                    }
-                }
-            }
-            for(int i = 0; i < size(); i++) {
-                if(!marked[i]) {
-                    return false;
-                }
-            }
-            return true;*/
-            return true;
-        }
-
-        //returns list of strongly connex components of graph
-        public List<Graph> connexComp() {
-            List<Graph> res = new ArrayList<Graph>();
-
-           /* boolean[] marked = new boolean[size()];
-            for(int i = 0; i < size(); i++) {
-                marked[i] = false;
-            }
-            Stack<Integer> p = new Stack<>();
-            List<Integer> compo = new ArrayList<>();
-            //strong hypothesis here ... vertice indexes go from 0 to n-1
-            p.add(0);
-
-            do {
-                while(!p.isEmpty()) {
-                    int n = p.pop();
-                    marked[n] = true;
-                    compo.add(n);
-                    for(Integer v : voisins(n)) {
-                        if(!marked[v]) {
-                            marked[v] = true;
-                            p.add(v);
-                        }
-                    }
-                }
-
-                Collections.sort(compo);
-                //create component
-                Graph gCompo = new Graph(compo.size());
-                gCompo.edgeThreshold = edgeThreshold;
-                int i = 0;
-                for(Integer s:compo) {
-                    gCompo.prvIndex.put(i, s);
-                    gCompo.futureIndex.put(s, i);
-                    for(Integer v: voisins(s)) {
-                        if(v < s) {
-                            gCompo.addEdge(i, gCompo.futureIndex.get(v));
-                        }
-                    }
-                    i++;
-                }
-                res.add(gCompo);
-                for(i = 0; i < size(); i++) {
-                    if(!marked[i]) {
-                        p.add(i);
-                        break;
-                    }
-                }
-                compo.clear();
-            }while(!p.isEmpty());
-            return res;*/
-            return res;
         }
 
         public String toString() {

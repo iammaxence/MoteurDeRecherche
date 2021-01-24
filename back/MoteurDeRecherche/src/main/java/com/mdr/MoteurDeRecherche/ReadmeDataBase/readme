@@ -1,0 +1,17 @@
+
+
+
+Pour crée la Base de donnée de 0:
+
+1. Creation des livres
+
+- Run buildBooksDatabase ( class : Utils/BuildBooksDatabase )
+
+2. Creation des index pour chaques livres
+
+- Run indexBookDatabase ( class : Utils/Indexation )
+
+3. Creation des index en Map puis sérialisation en file
+
+- Run createIndexMapToFile (class: utils/Indexation ) 
+

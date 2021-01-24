@@ -31,9 +31,8 @@ public class BuildBooksDatabase {
     public static void main(String[] args) throws IOException, JSONException, InterruptedException {
         // Decommenter la ligne du bas pour lancer le téléchargement de la database
 
-        System.out.println(buildBooksDatabase(2000).size());
-        /*String line = "Bonjour, je suis un test! Ca marche. 1.Monsieur";
-        System.out.println(line.replaceAll("\\p{Punct}", ""));*/
+        //System.out.println(buildBooksDatabase(2000).size());
+
     }
 
     /**

@@ -14,16 +14,16 @@ public class search {
     public static void main(String[] args) throws Exception {
         long before = System.currentTimeMillis();
         //System.out.println(rechercheClassique("fit"));
-        //List<String> words = Arrays.asList("fit", "turn", "role");
-        //System.out.println(rechercheMotsClefs(words));
-        System.out.println(rechercheRegex("r(O|l|e)+"));
+        List<String> words = Arrays.asList("fit", "turn", "role");
+        System.out.println(rechercheMotsClefs(words));
+        //System.out.println(rechercheRegex("r(O|l|e)+"));
         long after = System.currentTimeMillis();
         double total = after-before;
         System.out.println("Temps : "+total/1000);
     }
 
     /**
-     *  Search word in books (Average time 1,7sec for 500 books)
+     *  Search word in books (Average time 3,12 sec for 2000 books)
      * @param word
      * @return
      * @throws Exception
@@ -44,7 +44,7 @@ public class search {
     }
 
     /**
-     * Search books from a list of key word
+     * Search books from a list of key word (Average time 3,12 sec for 2000 books)
      * @param words
      * @return
      * @throws Exception
@@ -64,7 +64,7 @@ public class search {
     }
 
     /**
-     * Search books where there is a match with the regex
+     * Search books where there is a match with the regex (Average time 3,0 sec for 2000 books)
      * @param regex
      * @return
      * @throws Exception

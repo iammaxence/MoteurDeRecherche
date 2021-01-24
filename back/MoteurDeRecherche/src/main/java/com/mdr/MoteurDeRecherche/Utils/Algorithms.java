@@ -7,22 +7,37 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * La class Algorithms contient tous les algorithms sous jaccent (Calcul jaccad et rank)
+ */
 public class Algorithms {
 
     public static void main(String[] args) throws Exception {
-        //createVertexForAllIndexBooks();
-        /*int cpt=0;
-        for(Map.Entry<String,Integer> elem : readFileToMap(1).entrySet()){
-            System.out.println(elem.getKey()+" => "+elem.getValue());
-            cpt++;
-        }
-        System.out.println("Compteur: "+cpt);*/
+
+        //Create indexMap file  : (We need indexing books)
+        //createIndexMapToFile();
+
+        // Create all the vertex for all IndexBooks
+        createVertexForAllIndexBooks(0.70);
+
+        //Create matrix file of Jaccard
+        //createMatrixJaccardToFile();
+
+        //Test matrix file of Jaccard
+        //HashMap<Integer, HashMap<Integer, Double>> matrix = Matrix.readMatrixFromFile();
+
+
+
+
+        /*long before = System.currentTimeMillis();
 
         File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
         for (final File f1 : folder.listFiles()) {
             Map<String,Integer> map1= readFileToMap(f1);
 
             for (final File f2 : folder.listFiles()) {
+                if(f2.getName().equals(f1.getName()))
+                    continue;
                 Map<String,Integer> map2= readFileToMap(f2);
 
                 double res = distanceJaccard(map1.keySet(),map2.keySet());
@@ -30,6 +45,11 @@ public class Algorithms {
             }
 
         }
+
+        long after = System.currentTimeMillis();
+        double total = after-before;
+        System.out.println("Temps : "+total/1000);*/
+
 
        /* Map<String,Integer> f1= readFileToMap(1);
         Map<String,Integer> f2= readFileToMap(1);
@@ -39,140 +59,44 @@ public class Algorithms {
 
         double res = distanceJaccard(f1.keySet(),f2.keySet());
         System.out.println("distanceJaccard : "+res);*/
-    }
 
 
-    public static void createVertexForAllIndexBooks() throws Exception {
-        double before = System.currentTimeMillis();
-        int cpt = 1;
-        File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
-        for (final File f1 : folder.listFiles()) {
-            if (f1.isDirectory()) {
-                throw new Exception("Error Algorithms.java : No folder expected in the directory : IndexBooks");
-            } else {
-                //On récupère la map du premier index
-                int id = Integer.parseInt(f1.getName().replace(".dex", "")); //Id of the book
-                readFileToMap(id);
-
-                //On récupère la map du second index
-                for (final File f2 : folder.listFiles()) {
-                    if (f2.isDirectory()) {
-                        throw new Exception("Error Algorithms.java : No folder expected in the directory : IndexBooks");
-                    } else {
-                        int id2 = Integer.parseInt(f1.getName().replace(".dex", "")); //Id of the book
-                        readFileToMap(id2);
-
-
-                    }
-
-                }
-                System.out.println("Traitement en cours : " + cpt + "/2007");
-                cpt++;
-            }
-            double after = System.currentTimeMillis();
-            double temps = after - before;
-            System.out.println("Temps final : " + temps / 1000);
-        }
     }
 
     /**
-     * Create a Map file for each index books
+     *  Required : The matrixJaccard file (Average time 39sec for 2000 books)
      * @throws Exception
      */
-    public static void createIndexMapToFile() throws Exception { // Average time = 2,5sec for 2000 index books
+    public static void createVertexForAllIndexBooks(double constanteJaccard) throws Exception {
+
+        Graph graph = Graph.createIndexGraph();
         double before = System.currentTimeMillis();
-        int cpt=1;
-        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
-        for (final File f1 : folder.listFiles()) {
-            if (f1.isDirectory()) {
-                throw new Exception("Error Algorithms.java : No folder expected in the directory : IndexBooks");
-            } else {
-                HashMap<String, Integer> indexf1 = fileToMap(f1);
-                int id = Integer.parseInt(f1.getName().replace(".dex","")); //Id of the book
-                writeMapToFile(indexf1,id);
+        int cpt = 1;
+        File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
+
+        //Cache pour le calcul des distances de Jaccard (Deja crée dans le dossier MatrixJaccard)
+        HashMap<Integer, HashMap<Integer, Double>> cache = Matrix.readMatrixFromFile();
+
+
+        for(Map.Entry<Integer,HashMap<Integer,Double>> key: cache.entrySet()){
+
+            for(Map.Entry<Integer,Double> value: key.getValue().entrySet()){
+                if(value.getValue()<constanteJaccard){
+                    graph.addEdge(key.getKey(), value.getKey());
+                }
             }
-            System.out.println("Traitement en cours : "+cpt+"/2007");
+            System.out.println("Traitement en cours : "+cpt+"/"+cache.size());
             cpt++;
         }
+
         double after = System.currentTimeMillis();
-        double temps = after-before;
-        System.out.println("Temps creation map files : "+temps/1000);
+        double temps = after - before;
+        System.out.println("Temps final : " + temps / 1000);
+        System.out.println("Graph : \n"+graph.toString());
+        System.out.println("Graph size : " + graph.size());
+
     }
 
-    public static HashMap<String,Integer> fileToMap(File index) throws FileNotFoundException {
-        HashMap<String,Integer> keywords = new HashMap<String,Integer>();
-
-        //Pattern matching
-        Pattern p = Pattern.compile("(.*) : \\[.* : (.*)\\]");
-
-        Scanner text = new Scanner(index);
-        int cpt=1;
-        while (text.hasNextLine()) { // exemple of line : frowning : [98 : 2]
-            Matcher matcher = p.matcher(text.nextLine());
-            if(matcher.find()){
-                keywords.put(matcher.group(1),Integer.parseInt(matcher.group(2)));
-            }
-            cpt++;
-        }
-        text.close();
-
-        return keywords;
-    }
-
-    //Read Map etc..
-    public static void writeMapToFile(HashMap<String,Integer> map,int idbook) {
-        //write to file
-        String pathfile = "src/main/java/com/mdr/MoteurDeRecherche/IndexMap/"+idbook+".map";
-        try {
-            File fileOne=new File(pathfile);
-            FileOutputStream fos=new FileOutputStream(fileOne);
-            ObjectOutputStream oos=new ObjectOutputStream(fos);
-
-            oos.writeObject(map);
-            oos.flush();
-            oos.close();
-            fos.close();
-        } catch(Exception e) {}
-    }
-
-    public static HashMap<String,Integer> readFileToMap(File file) throws Exception {
-        //read from file
-        HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
-        try {
-
-            FileInputStream fis=new FileInputStream(file);
-            ObjectInputStream ois=new ObjectInputStream(fis);
-
-            mapInFile=(HashMap<String,Integer>)ois.readObject();
-
-            ois.close();
-            fis.close();
-            //print All data in MAP
-            return mapInFile;
-        } catch(Exception e) {}
-
-        throw new Exception("NOT HERE");
-    }
-
-    public static HashMap<String,Integer> readFileToMap(int idbook) throws Exception {
-        //read from file
-        String pathfile = "src/main/java/com/mdr/MoteurDeRecherche/IndexMap/"+idbook+".map";
-        HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
-        try {
-            File toRead=new File(pathfile);
-            FileInputStream fis=new FileInputStream(toRead);
-            ObjectInputStream ois=new ObjectInputStream(fis);
-
-            mapInFile=(HashMap<String,Integer>)ois.readObject();
-
-            ois.close();
-            fis.close();
-            //print All data in MAP
-            return mapInFile;
-        } catch(Exception e) {}
-
-        throw new Exception("NOT HERE");
-    }
 
     //Jaccard Algorithms
 
@@ -184,7 +108,7 @@ public class Algorithms {
      */
     static public double distanceJaccard(Set<String> f1, Set<String>  f2) {
 
-        //Garanti pas le type du set (Si problème, à changer)
+        // Le collect ne garanti pas le type du set (Si problème, à changer)
         Set<String> intersection = f1.parallelStream()
                 .collect(Collectors.toSet());;
         intersection.retainAll(f2);
@@ -193,6 +117,64 @@ public class Algorithms {
 
         //System.out.println("Union : "+union+ " intersection : "+intersection.size());
         return (union - intersection.size()) / union;
+    }
+
+    /**
+     *  (Average time 26min for 150 books)
+     * @throws Exception
+     */
+    public static void createMatrixJaccardToFile() throws Exception {
+
+
+        double before = System.currentTimeMillis();
+        int cpt = 1;
+        File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
+
+        //Cache pour le calcul des distances de Jaccard
+        Matrix cache = new Matrix();
+
+        for (final File f1 : folder.listFiles()) {
+            if (f1.isDirectory()) {
+                throw new Exception("Error Algorithms.java : No folder expected in the directory : IndexMap");
+            } else {
+                //On récupère la map du premier index
+                int id = Integer.parseInt(f1.getName().replace(".map", "")); //Id of the book
+                Map<String,Integer> map1= Indexation.readFileToMap(f1);
+
+                //On récupère la map du second index
+                for (final File f2 : folder.listFiles()) {
+                    if (f2.isDirectory()) {
+                        throw new Exception("Error Algorithms.java : No folder expected in the directory : IndexMap");
+                    }
+                    else {
+                        int id2 = Integer.parseInt(f2.getName().replace(".map", "")); //Id of the book
+                        //System.out.println(f2.getName());
+                        Map<String,Integer> map2=Indexation.readFileToMap(f2);
+
+                        //Distance de Jaccard
+
+                        //Si la distrance n'a jamais été calculé, on la calcul
+                        if(cache.getElemMatrix(id,id2)== -1.0) {
+                            double distanceJaccard = distanceJaccard(map1.keySet(),map2.keySet());
+                            cache.addToMatrix(id,id2,distanceJaccard);
+                        }
+
+                    }
+
+                }
+
+            }
+            System.out.println("Traitement en cours : " + cpt + "/2007");
+            cpt++;
+        }
+
+        //Ecriture dans un fichier pour le graph jaccard
+        Matrix.writeMatrixIntoFile(cache);
+
+        double after = System.currentTimeMillis();
+        double temps = after - before;
+        System.out.println("Temps final : " + temps / 1000);
+
     }
 
 }

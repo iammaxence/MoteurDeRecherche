@@ -23,7 +23,12 @@ public class Indexation {
 
         /* Create index for all the books */
 
-        indexBookDatabase();
+        //indexBookDatabase();
+
+        /* Create indexMap for all indexBooks */
+
+        //createIndexMapToFile();
+
 
         /* Create an index for a File */
 
@@ -166,12 +171,9 @@ public class Indexation {
                     }
                 });
 
-                /*int occurence = getOccurenceOfWordInFile(indexBook,word);
-                if(occurence>0)
-                    books.put(id,occurence);*/
             }
         }
-        //Ordonnée par ordre décroissant: A faire
+
         executorService.shutdown();
         executorService.awaitTermination(3, TimeUnit.SECONDS);
         return books;
@@ -344,6 +346,11 @@ public class Indexation {
         return books;
     }
 
+    /**
+     * Sort an HashMap
+     * @param books
+     * @return LinkedHashMap (HashMap with order)
+     */
     public static LinkedHashMap<Integer, Pair<Integer, Integer>> sortedBooksFromKeywords(ConcurrentHashMap<Integer,Pair<Integer,Integer>> books){
         //LinkedHashMap : Préserver l'ordre des élémenents
         LinkedHashMap<Integer, Pair<Integer, Integer>> sortedMap;
@@ -357,8 +364,149 @@ public class Indexation {
         return sortedMap;
     }
 
+    /**
+     * Compare 2 pair
+     * @param p1
+     * @param p2
+     * @return
+     */
     private static int compare(Pair<Integer,Integer> p1, Pair<Integer,Integer> p2) {
         return p1.getKey() == p2.getKey()? p2.getValue() - p1.getValue() : p2.getKey() - p1.getKey();
+    }
+
+    /***************************************************************
+     ********************* INDEX MAP FUNCTIONS *********************
+     ***************************************************************
+     * /
+
+    /**
+     * Create a Map file for each index books (Average time = 3,1 min for 2000 index books)
+     * @throws Exception
+     */
+    public static void createIndexMapToFile() throws Exception {
+        double before = System.currentTimeMillis();
+
+        //Creation of the folder IndexMap if he doesn't exist
+        File theDir = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
+        if (!theDir.exists()){
+            theDir.mkdirs();
+        }
+
+        int cpt=1;
+        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        for (final File f1 : folder.listFiles()) {
+            if (f1.isDirectory()) {
+                throw new Exception("Error Algorithms.java : No folder expected in the directory : IndexBooks");
+            } else {
+                HashMap<String, Integer> indexf1 = fileToMap(f1);
+                int id = Integer.parseInt(f1.getName().replace(".dex","")); //Id of the book
+                writeMapToFile(indexf1,id);
+            }
+            System.out.println("Traitement en cours : "+cpt+"/2007");
+            cpt++;
+        }
+        double after = System.currentTimeMillis();
+        double temps = after-before;
+        System.out.println("Temps creation map files : "+temps/1000);
+    }
+
+    /**
+     * Get the map from the associate file (file = words of a book)
+     * @param index
+     * @return the HashMap of the books file ( Hashmap of {word : occurences} )
+     * @throws FileNotFoundException
+     */
+    public static HashMap<String,Integer> fileToMap(File index) throws FileNotFoundException {
+        HashMap<String,Integer> keywords = new HashMap<String,Integer>();
+
+        //Pattern matching
+        Pattern p = Pattern.compile("(.*) : \\[.* : (.*)\\]");
+
+        Scanner text = new Scanner(index);
+        int cpt=1;
+        while (text.hasNextLine()) { // exemple of line : frowning : [98 : 2]
+            Matcher matcher = p.matcher(text.nextLine());
+            if(matcher.find()){
+                keywords.put(matcher.group(1),Integer.parseInt(matcher.group(2)));
+            }
+            cpt++;
+        }
+        text.close();
+
+        return keywords;
+    }
+
+    /**
+     * Write the HashMap into a file (Serialization)
+     * @param map
+     * @param idbook
+     */
+    public static void writeMapToFile(HashMap<String,Integer> map,int idbook) {
+        //write to file
+        String pathfile = "src/main/java/com/mdr/MoteurDeRecherche/IndexMap/"+idbook+".map";
+        try {
+            File fileOne=new File(pathfile);
+            FileOutputStream fos=new FileOutputStream(fileOne);
+            ObjectOutputStream oos=new ObjectOutputStream(fos);
+
+            oos.writeObject(map);
+            oos.flush();
+            oos.close();
+            fos.close();
+        } catch(Exception e) {}
+    }
+
+    /**
+     *
+     * @param file
+     * @return the HashMap of the books file ( Hashmap of {word : occurences} )
+     * @throws Exception
+     */
+    public static HashMap<String,Integer> readFileToMap(File file) throws Exception {
+        //read from file
+        HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
+        try {
+
+            FileInputStream fis=new FileInputStream(file);
+            ObjectInputStream ois=new ObjectInputStream(fis);
+
+            mapInFile=(HashMap<String,Integer>)ois.readObject();
+
+            ois.close();
+            fis.close();
+            //print All data in MAP
+            return mapInFile;
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        throw new Exception("Can't readFileToMap : Something happend in Indexation.class");
+    }
+
+    /**
+     *
+     * @param idbook
+     * @return the HashMap of the idbook ( Hashmap of {word : occurences} )
+     * @throws Exception
+     */
+    public static HashMap<String,Integer> readFileToMap(int idbook) throws Exception {
+        //read from file
+        String pathfile = "src/main/java/com/mdr/MoteurDeRecherche/IndexMap/"+idbook+".map";
+        HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
+        try {
+            File toRead=new File(pathfile);
+            FileInputStream fis=new FileInputStream(toRead);
+            ObjectInputStream ois=new ObjectInputStream(fis);
+
+            mapInFile=(HashMap<String,Integer>)ois.readObject();
+
+            ois.close();
+            fis.close();
+            //print All data in MAP
+            return mapInFile;
+        } catch(Exception e) {}
+
+        throw new Exception("Can't ReadIndexMap : Something happend in Indexation.class");
     }
 
 
