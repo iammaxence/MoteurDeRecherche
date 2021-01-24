@@ -1,11 +1,14 @@
 package com.mdr.MoteurDeRecherche.Utils;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 public class Matrix {
+    private static String absolutePathFile = Paths.get("").toAbsolutePath()+
+            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
     protected HashMap<Integer,HashMap<Integer,Double>> matrix= new HashMap<Integer, HashMap<Integer, Double>>();
 
     public Matrix(){
@@ -72,7 +75,7 @@ public class Matrix {
     }
 
     public static void writeMatrixIntoFile (Matrix ldapContent) throws IOException {
-        File fileToSaveObject=new File("src/main/java/com/mdr/MoteurDeRecherche/MatrixJaccard/matrix.txt");
+        File fileToSaveObject=new File(absolutePathFile+"MatrixJaccard/matrix.txt");
 
 
         FileOutputStream fileOut = new FileOutputStream(fileToSaveObject);
@@ -85,7 +88,7 @@ public class Matrix {
     }
 
     public static HashMap<Integer,HashMap<Integer,Double>> readMatrixFromFile () throws IOException, ClassNotFoundException {
-        File fileToReadObject=new File("src/main/java/com/mdr/MoteurDeRecherche/MatrixJaccard/matrix.txt");
+        File fileToReadObject=new File(absolutePathFile+"MatrixJaccard/matrix.txt");
         HashMap<Integer,HashMap<Integer,Double>> ldapContent;
 
         FileInputStream fileIn = new FileInputStream(fileToReadObject);

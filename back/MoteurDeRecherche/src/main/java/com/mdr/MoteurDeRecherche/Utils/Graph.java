@@ -1,10 +1,14 @@
 package com.mdr.MoteurDeRecherche.Utils;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Graph {
-        static Map<Integer, Set<Integer>> adjacents = new HashMap<>();
+    private static String absolutePathFile = Paths.get("").toAbsolutePath()+
+            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+
+        private static Map<Integer, Set<Integer>> adjacents = new HashMap<>();
 
         Map<Integer,Integer> prvIndex = new HashMap<>();
         Map<Integer,Integer> futureIndex = new HashMap<>();
@@ -15,7 +19,7 @@ public class Graph {
             g.addEdge(16,24);
             g.addEdge(1,24);
             System.out.println(g.toString());
-            g.graphToFile("src/main/java/com/mdr/MoteurDeRecherche/GraphJaccard/graph.txt");
+
         }
 
         public Graph(Map<Integer, Set<Integer>> adjacents) {
@@ -23,7 +27,7 @@ public class Graph {
         }
 
         public static Graph createIndexGraph() throws Exception {
-            File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+            File folder = new File (absolutePathFile+"IndexBooks");
             for (final File indexBook : folder.listFiles()) {
                 if (indexBook.isDirectory()) {
                     throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
@@ -80,6 +84,10 @@ public class Graph {
          */
         public int size() {
                 return adjacents.size();
+        }
+
+        public Map<Integer, Set<Integer>> getAdjacents(){
+            return adjacents;
         }
 
         /**

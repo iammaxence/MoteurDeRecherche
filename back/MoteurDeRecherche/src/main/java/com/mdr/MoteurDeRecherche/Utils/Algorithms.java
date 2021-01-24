@@ -1,6 +1,7 @@
 package com.mdr.MoteurDeRecherche.Utils;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -11,6 +12,8 @@ import java.util.stream.Collectors;
  * La class Algorithms contient tous les algorithms sous jaccent (Calcul jaccad et rank)
  */
 public class Algorithms {
+    private static String absolutePathFile = Paths.get("").toAbsolutePath()+
+            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
 
     public static void main(String[] args) throws Exception {
 
@@ -18,7 +21,14 @@ public class Algorithms {
         //createIndexMapToFile();
 
         // Create all the vertex for all IndexBooks
-        createVertexForAllIndexBooks(0.70);
+
+        //Cache pour le calcul des distances de Jaccard (Deja crée dans le dossier MatrixJaccard)
+        System.out.println("Récuperation du cache en cours...");
+        HashMap<Integer, HashMap<Integer, Double>> cache = Matrix.readMatrixFromFile();
+        System.out.println("Récuperation terminé. Traitement en cours..");
+
+        Graph graph = createVertexForAllIndexBooks(0.70,cache);
+        System.out.println(closenessCentrality(graph,cache));
 
         //Create matrix file of Jaccard
         //createMatrixJaccardToFile();
@@ -63,27 +73,30 @@ public class Algorithms {
 
     }
 
+
+
     /**
-     *  Required : The matrixJaccard file (Average time 39sec for 2000 books)
+     * Required : The matrixJaccard file (Average time 39sec for 2000 books)
+     * @param constanteJaccard
+     * @param cache : Matrix of Jaccard
+     * @return Graph that contains all the vertex from IndexBooks
      * @throws Exception
      */
-    public static void createVertexForAllIndexBooks(double constanteJaccard) throws Exception {
+    public static Graph createVertexForAllIndexBooks(double constanteJaccard,
+                                                     HashMap<Integer, HashMap<Integer, Double>> cache) throws Exception {
 
         Graph graph = Graph.createIndexGraph();
         double before = System.currentTimeMillis();
         int cpt = 1;
-        File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
-
-        //Cache pour le calcul des distances de Jaccard (Deja crée dans le dossier MatrixJaccard)
-        HashMap<Integer, HashMap<Integer, Double>> cache = Matrix.readMatrixFromFile();
-
+        File folder = new File(absolutePathFile+"IndexMap");
 
         for(Map.Entry<Integer,HashMap<Integer,Double>> key: cache.entrySet()){
 
             for(Map.Entry<Integer,Double> value: key.getValue().entrySet()){
-                if(value.getValue()<constanteJaccard){
+                if(key.getKey() !=  value.getKey() && value.getValue()<constanteJaccard){
                     graph.addEdge(key.getKey(), value.getKey());
                 }
+
             }
             System.out.println("Traitement en cours : "+cpt+"/"+cache.size());
             cpt++;
@@ -91,14 +104,52 @@ public class Algorithms {
 
         double after = System.currentTimeMillis();
         double temps = after - before;
-        System.out.println("Temps final : " + temps / 1000);
-        System.out.println("Graph : \n"+graph.toString());
-        System.out.println("Graph size : " + graph.size());
-
+        //System.out.println("Temps final : " + temps / 1000);
+        //System.out.println("Graph : \n"+graph.toString());
+        //System.out.println("Graph size : " + graph.size());
+        return graph;
     }
 
 
-    //Jaccard Algorithms
+    /***************************************************************
+     ********************* CLOSENESS CENTRALITY ********************
+     ***************************************************************/
+
+    /**
+     *
+     * @return hashmap that contain the list of vertex of a graph associate to their rank
+     * @throws Exception
+     */
+    static public LinkedHashMap<Integer,Double> closenessCentrality(Graph graph,
+                                                               HashMap<Integer, HashMap<Integer, Double>> matrixJaccard)
+            throws Exception {
+
+        LinkedHashMap<Integer,Double> ranks = new LinkedHashMap<Integer, Double>();
+
+        for(Map.Entry<Integer,Set<Integer>> key : graph.getAdjacents().entrySet()){
+            double sumOfDist =0.0;
+            for(Integer in : key.getValue()){
+                sumOfDist+= matrixJaccard.get(key.getKey()).get(in);
+            }
+            if (sumOfDist!=0)
+                ranks.put(key.getKey(),1/sumOfDist);
+            else
+                ranks.put(key.getKey(),0.0);
+        }
+
+        //Sorted by descending order
+        LinkedHashMap<Integer, Double> reverseSortedMap = new LinkedHashMap<>();
+        ranks.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
+
+        return reverseSortedMap;
+    }
+
+    /***************************************************************
+     ********************* JACCARD ALGORITHMS ********************
+     ***************************************************************/
 
     /**
      * distance jaccard = (|A U B| - |A n B|)/ |A U B|
@@ -120,7 +171,7 @@ public class Algorithms {
     }
 
     /**
-     *  (Average time 26min for 150 books)
+     *  (Average time 3 days for 2000 books)
      * @throws Exception
      */
     public static void createMatrixJaccardToFile() throws Exception {
@@ -128,7 +179,7 @@ public class Algorithms {
 
         double before = System.currentTimeMillis();
         int cpt = 1;
-        File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
+        File folder = new File(absolutePathFile+"IndexMap");
 
         //Cache pour le calcul des distances de Jaccard
         Matrix cache = new Matrix();
@@ -164,7 +215,7 @@ public class Algorithms {
                 }
 
             }
-            System.out.println("Traitement en cours : " + cpt + "/2007");
+            System.out.println("Traitement en cours : " + cpt + "/"+folder.listFiles().length);
             cpt++;
         }
 

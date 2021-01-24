@@ -4,6 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.*;
 import java.util.concurrent.*;
@@ -13,6 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Indexation {
+    private static String absolutePathFile = Paths.get("").toAbsolutePath()+
+                        "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
     private static ExecutorService executorService = new ThreadPoolExecutor(
             4,
             4,
@@ -46,9 +50,14 @@ public class Indexation {
 
     }
 
+    /**
+     * Create Index for all the books in the folder books (Average time = )
+     * @throws Exception
+     */
     public static void indexBookDatabase() throws Exception {
-        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/Books");
-        int cpt= 0;
+        File folder = new File (absolutePathFile+"Books");
+        System.out.println(folder.toString());
+        int cpt= 1;
         for (final File indexBook : folder.listFiles()) {
             System.out.println("Indexation en cours : "+cpt+"/"+folder.listFiles().length);
             cpt++;
@@ -71,8 +80,7 @@ public class Indexation {
     public static Map<String,Pair<Integer, Integer>> indexBook(int id) throws IOException {
         // [mot :[title: occurence]]
         Map<String,Pair<Integer, Integer>> index = new HashMap<String,Pair<Integer, Integer>>();
-
-        File book = new File("src/main/java/com/mdr/MoteurDeRecherche/Books/"+id+".txt");
+        File book = new File(absolutePathFile+"Books/"+id+".txt");
         Scanner readbook = new Scanner(book);
         while (readbook.hasNext()) {
             String mot = readbook.next().replaceAll("\\p{Punct}", "").replaceAll("`","");
@@ -110,7 +118,7 @@ public class Indexation {
         // [mot :[title: occurence]]
         Map<String,Pair<Integer, Integer>> index = new HashMap<String,Pair<Integer, Integer>>();
 
-        File book = new File("src/main/java/com/mdr/MoteurDeRecherche/Books/"+id+".txt");
+        File book = new File(absolutePathFile+"Books/"+id+".txt");
         Scanner readbook = new Scanner(book);
         while (readbook.hasNext()) {
             String mot =readbook.next().replaceAll("\\p{Punct}", "")
@@ -149,7 +157,7 @@ public class Indexation {
     public static ConcurrentHashMap<Integer,Integer> getListBooksWithSpecificWord(String word) throws Exception {
         ConcurrentHashMap<Integer,Integer> books = new ConcurrentHashMap<Integer,Integer>(); // NameOfTheBook : OccurenceOfTheWord
 
-        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        File folder = new File (absolutePathFile+"IndexBooks");
         for (final File indexBook : folder.listFiles()) {
             if (indexBook.isDirectory()) {
                 throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
@@ -195,7 +203,7 @@ public class Indexation {
         while (readbook.hasNext()) {
             Matcher m = p.matcher(readbook.nextLine());
 
-            if(m.find()) { // Il faut faire le find() avant le m.matches() (Pourquoi ? Magic)
+            if(m.find()) { // Il faut faire le find() avant le m.matches() (Pourquoi ? Black Magic)
                 m.matches(); //Toujours faire m.matches avant de faire m.groupe() (Je sais pas pourquoi?)
                 occurence = new AtomicInteger(Integer.parseInt(m.group(1))); //On récupère l'occurence du mot dans le texte
                 return occurence;
@@ -216,7 +224,7 @@ public class Indexation {
     {
         int cpt=0;
         FileWriter writer = new FileWriter(
-                "src/main/java/com/mdr/MoteurDeRecherche/IndexBooks/"+id+".dex");
+                absolutePathFile+"IndexBooks/"+id+".dex");
         index.forEach((k,v) -> {
             String key = k;
             int occurence = v.getValue();
@@ -255,7 +263,7 @@ public class Indexation {
         List<Integer> books = Collections.synchronizedList(new ArrayList<>());
         Pattern p = Pattern.compile("^"+regex+"$");
 
-        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        File folder = new File (absolutePathFile+"IndexBooks");
         for (final File indexBook : folder.listFiles()) {
             if (indexBook.isDirectory()) {
                 throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
@@ -301,7 +309,7 @@ public class Indexation {
         //books : key = idBook, value = Pair(number of keys words, sum of occurrence)
         ConcurrentHashMap<Integer,Pair<Integer,Integer>> books = new ConcurrentHashMap<Integer,Pair<Integer,Integer>>();
 
-        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        File folder = new File (absolutePathFile+"IndexBooks");
         for (final File indexBook : folder.listFiles()) {
             if (indexBook.isDirectory()) {
                 throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
@@ -387,13 +395,13 @@ public class Indexation {
         double before = System.currentTimeMillis();
 
         //Creation of the folder IndexMap if he doesn't exist
-        File theDir = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
+        File theDir = new File(absolutePathFile+"IndexMap");
         if (!theDir.exists()){
             theDir.mkdirs();
         }
 
         int cpt=1;
-        File folder = new File ("src/main/java/com/mdr/MoteurDeRecherche/IndexBooks");
+        File folder = new File (absolutePathFile+"IndexBooks");
         for (final File f1 : folder.listFiles()) {
             if (f1.isDirectory()) {
                 throw new Exception("Error Algorithms.java : No folder expected in the directory : IndexBooks");
@@ -402,7 +410,7 @@ public class Indexation {
                 int id = Integer.parseInt(f1.getName().replace(".dex","")); //Id of the book
                 writeMapToFile(indexf1,id);
             }
-            System.out.println("Traitement en cours : "+cpt+"/2007");
+            System.out.println("Traitement en cours : "+cpt+"/"+folder.listFiles().length);
             cpt++;
         }
         double after = System.currentTimeMillis();
@@ -443,7 +451,7 @@ public class Indexation {
      */
     public static void writeMapToFile(HashMap<String,Integer> map,int idbook) {
         //write to file
-        String pathfile = "src/main/java/com/mdr/MoteurDeRecherche/IndexMap/"+idbook+".map";
+        String pathfile = absolutePathFile+"IndexMap/"+idbook+".map";
         try {
             File fileOne=new File(pathfile);
             FileOutputStream fos=new FileOutputStream(fileOne);
@@ -491,7 +499,7 @@ public class Indexation {
      */
     public static HashMap<String,Integer> readFileToMap(int idbook) throws Exception {
         //read from file
-        String pathfile = "src/main/java/com/mdr/MoteurDeRecherche/IndexMap/"+idbook+".map";
+        String pathfile = absolutePathFile+"IndexMap/"+idbook+".map";
         HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
         try {
             File toRead=new File(pathfile);

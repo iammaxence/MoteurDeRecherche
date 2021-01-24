@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -21,7 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BuildBooksDatabase {
-
+    private static String absolutePathFile = Paths.get("").toAbsolutePath()+
+            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
     private static ExecutorService executorService = new ThreadPoolExecutor(
             4,
             4,
@@ -46,7 +48,7 @@ public class BuildBooksDatabase {
         int cpt=1; //AtomicInteger ici
         while (listofBooksIds.size()<nbBooks){
             listofBooksIds.addAll(auxBuildBooksDatabase(cpt,nbBooks));
-            System.out.println("Books done = "+listofBooksIds.size()+"/1664");
+            System.out.println("Books done = "+listofBooksIds.size()+"/"+nbBooks);
             cpt++;
         }
         executorService.shutdown();
@@ -252,7 +254,7 @@ public class BuildBooksDatabase {
         /*Pattern pattern = Pattern.compile(":");
         String[] matcher = pattern.split(name);*/
 
-        String dir= "src/main/java/com/mdr/MoteurDeRecherche/Books/"+id+".txt";
+        String dir= absolutePathFile+"Books/"+id+".txt";
         FileUtils.copyURLToFile(new URL(urlbooks), new File(dir));
     }
 
