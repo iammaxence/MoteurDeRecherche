@@ -26,7 +26,12 @@ public class Graph {
 
         }
 
-        public static Graph createIndexGraph() throws Exception {
+    /**
+     * Create Index Graph
+     * @return Graph with vertex that represent all the books in the database
+     * @throws Exception
+     */
+    public static Graph createIndexGraph() throws Exception {
             File folder = new File (absolutePathFile+"IndexBooks");
             for (final File indexBook : folder.listFiles()) {
                 if (indexBook.isDirectory()) {
@@ -40,6 +45,7 @@ public class Graph {
 
             return new Graph(adjacents);
         }
+
 
         /**
          *  Add new Vertex to the Graph

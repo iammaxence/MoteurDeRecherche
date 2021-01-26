@@ -9,13 +9,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class search {
+public class Search {
 
     public static void main(String[] args) throws Exception {
         long before = System.currentTimeMillis();
-        //System.out.println(rechercheClassique("fit"));
-        List<String> words = Arrays.asList("fit", "turn", "role");
-        System.out.println(rechercheMotsClefs(words));
+        System.out.println(rechercheClassique("fit"));
+        /*List<String> words = Arrays.asList("fit", "turn", "role");
+        System.out.println(rechercheMotsClefs(words));*/
         //System.out.println(rechercheRegex("r(O|l|e)+"));
         long after = System.currentTimeMillis();
         double total = after-before;

@@ -79,7 +79,7 @@ public class Algorithms {
      * Required : The matrixJaccard file (Average time 39sec for 2000 books)
      * @param constanteJaccard
      * @param cache : Matrix of Jaccard
-     * @return Graph that contains all the vertex from IndexBooks
+     * @return Graph that contains all the vertex (with edges) from IndexBooks
      * @throws Exception
      */
     public static Graph createVertexForAllIndexBooks(double constanteJaccard,
