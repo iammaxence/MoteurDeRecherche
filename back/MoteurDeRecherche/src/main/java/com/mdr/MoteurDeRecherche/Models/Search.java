@@ -1,8 +1,11 @@
 package com.mdr.MoteurDeRecherche.Models;
 
+import com.mdr.MoteurDeRecherche.Controllers.SearchEngine;
 import com.mdr.MoteurDeRecherche.Utils.BookInfo;
 import com.mdr.MoteurDeRecherche.Utils.Indexation;
 import com.mdr.MoteurDeRecherche.Utils.Pair;
+import com.mdr.MoteurDeRecherche.Utils.SearchingAlgorithms;
+import jdk.nashorn.internal.runtime.regexp.joni.SearchAlgorithm;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -31,7 +34,7 @@ public class Search {
     public static JSONObject rechercheClassique(String word) throws Exception {
         Set res = new HashSet<>();
         // Map<IdBooks,occurence>
-        Map<Integer,Integer> map = Indexation.getListBooksWithSpecificWord(word.toLowerCase());
+        Map<Integer,Integer> map = SearchingAlgorithms.getListBooksWithSpecificWord(word.toLowerCase());
 
         //Conversion id en titre : Soit on le fait ici, soit dans le javascript (Average time = 51 sec)
 
@@ -40,7 +43,7 @@ public class Search {
             res.add(title);
         }*/
 
-        return new JSONObject().put("books",Indexation.SortedMapDescending(map).keySet());
+        return new JSONObject().put("books",SearchingAlgorithms.SortedMapDescending(map).keySet());
     }
 
     /**
@@ -56,11 +59,11 @@ public class Search {
         //List of book without double
 
         ConcurrentHashMap<Integer, Pair<Integer,Integer>> map;
-        map = Indexation.getBooksFromKeysWords(words.stream().map(String::toLowerCase).collect(Collectors.toList()));
+        map = SearchingAlgorithms.getBooksFromKeysWords(words.stream().map(String::toLowerCase).collect(Collectors.toList()));
 
         //Rank by number of key word
 
-        return new JSONObject().put("books",Indexation.sortedBooksFromKeywords(map));
+        return new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(map));
     }
 
     /**

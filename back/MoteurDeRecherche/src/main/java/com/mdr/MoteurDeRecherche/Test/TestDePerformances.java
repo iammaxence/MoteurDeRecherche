@@ -1,11 +1,17 @@
 package com.mdr.MoteurDeRecherche.Test;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.MapSerializer;
 import com.mdr.MoteurDeRecherche.Models.Search;
 import com.mdr.MoteurDeRecherche.Utils.Algorithms;
 import com.mdr.MoteurDeRecherche.Utils.Graph;
 import com.mdr.MoteurDeRecherche.Utils.Matrix;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -41,6 +47,10 @@ public class TestDePerformances {
 
         //Delete
         //deleteIndexBooks(200);
+       /* HashMap<String,Integer> ma = new HashMap<String,Integer>();
+        ma.put("Bonjour",3);
+        storeData(ma,1);*/
+
 
         long after = System.currentTimeMillis();
         double total = after-before;
@@ -92,5 +102,7 @@ public class TestDePerformances {
             cpt++;
         }
     }
+
+
 
 }

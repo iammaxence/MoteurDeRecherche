@@ -23,15 +23,16 @@ public class Algorithms {
         // Create all the vertex for all IndexBooks
 
         //Cache pour le calcul des distances de Jaccard (Deja crée dans le dossier MatrixJaccard)
+       /*
         System.out.println("Récuperation du cache en cours...");
         HashMap<Integer, HashMap<Integer, Double>> cache = Matrix.readMatrixFromFile();
         System.out.println("Récuperation terminé. Traitement en cours..");
 
         Graph graph = createVertexForAllIndexBooks(0.70,cache);
-        System.out.println(closenessCentrality(graph,cache));
+        System.out.println(closenessCentrality(graph,cache));*/
 
         //Create matrix file of Jaccard
-        //createMatrixJaccardToFile();
+        createMatrixJaccardToFile();
 
         //Test matrix file of Jaccard
         //HashMap<Integer, HashMap<Integer, Double>> matrix = Matrix.readMatrixFromFile();
@@ -88,7 +89,6 @@ public class Algorithms {
         Graph graph = Graph.createIndexGraph();
         double before = System.currentTimeMillis();
         int cpt = 1;
-        File folder = new File(absolutePathFile+"IndexMap");
 
         for(Map.Entry<Integer,HashMap<Integer,Double>> key: cache.entrySet()){
 
@@ -190,7 +190,7 @@ public class Algorithms {
             } else {
                 //On récupère la map du premier index
                 int id = Integer.parseInt(f1.getName().replace(".map", "")); //Id of the book
-                Map<String,Integer> map1= Indexation.readFileToMap(f1);
+                Map<String,Integer> map1= Serialisation.loadData(f1);
 
                 //On récupère la map du second index
                 for (final File f2 : folder.listFiles()) {
@@ -200,7 +200,7 @@ public class Algorithms {
                     else {
                         int id2 = Integer.parseInt(f2.getName().replace(".map", "")); //Id of the book
                         //System.out.println(f2.getName());
-                        Map<String,Integer> map2=Indexation.readFileToMap(f2);
+                        Map<String,Integer> map2=Serialisation.loadData(f2);
 
                         //Distance de Jaccard
 
@@ -220,7 +220,7 @@ public class Algorithms {
         }
 
         //Ecriture dans un fichier pour le graph jaccard
-        Matrix.writeMatrixIntoFile(cache);
+        Serialisation.storeMatrix(cache);
 
         double after = System.currentTimeMillis();
         double temps = after - before;

@@ -1,5 +1,10 @@
 package com.mdr.MoteurDeRecherche.Utils;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.MapSerializer;
+import com.mdr.MoteurDeRecherche.Test.TestDePerformances;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,6 +55,11 @@ public class Indexation {
 
     }
 
+    /***************************************************************
+     ******************** INDEX BOOKS FUNCTIONS ********************
+     ***************************************************************/
+
+
     /**
      * Create Index for all the books in the folder books (Average time = )
      * @throws Exception
@@ -71,43 +81,6 @@ public class Indexation {
 
     }
 
-    /**
-     * Index a book
-     * @param id : id of a book
-     * @throws IOException
-     * @return The index of a book -> {word : [idOfTheBook : occurences] }
-     */
-    public static Map<String,Pair<Integer, Integer>> indexBook(int id) throws IOException {
-        // [mot :[title: occurence]]
-        Map<String,Pair<Integer, Integer>> index = new HashMap<String,Pair<Integer, Integer>>();
-        File book = new File(absolutePathFile+"Books/"+id+".txt");
-        Scanner readbook = new Scanner(book);
-        while (readbook.hasNext()) {
-            String mot = readbook.next().replaceAll("\\p{Punct}", "").replaceAll("`","");
-            //Si le mot est juste de la ponctuation, on passe au tour suivant
-            if(mot.isEmpty())
-                continue;
-            mot = mot.toLowerCase();
-            Pair<Integer, Integer> myword;
-
-            if(index.containsKey(mot)){
-
-                Pair<Integer, Integer> theword = index.get(mot);
-                int currentOccurence= theword.getValue()+1; // Get occurence du mot
-                //System.out.println(mot+" : "+currentOccurence);
-                myword = new Pair(id, currentOccurence);
-            }
-            else {
-                myword = new Pair<Integer,Integer>(id,1);
-            }
-            index.put(mot,myword);
-        }
-
-        readbook.close();
-        //index => All the words with their occurences
-        return index;
-
-    }
 
     /**
      * Index a book
@@ -148,70 +121,8 @@ public class Indexation {
 
     }
 
-    /**
-     *
-     * @param word
-     * @return A map -> [nameOfTheBook : OccurenceOfTheWord]
-     * @throws Exception
-     */
-    public static ConcurrentHashMap<Integer,Integer> getListBooksWithSpecificWord(String word) throws Exception {
-        ConcurrentHashMap<Integer,Integer> books = new ConcurrentHashMap<Integer,Integer>(); // NameOfTheBook : OccurenceOfTheWord
 
-        File folder = new File (absolutePathFile+"IndexBooks");
-        for (final File indexBook : folder.listFiles()) {
-            if (indexBook.isDirectory()) {
-                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
-            } else {
-                int id = Integer.parseInt(indexBook.getName().replace(".dex","")); //Id of the book
 
-                //Multithreading
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        AtomicInteger occurence = new AtomicInteger(-1);
-                        try {
-                            occurence = getOccurenceOfWordInFile(indexBook,word);
-                            if(occurence.intValue()>0)
-                                books.put(id,occurence.intValue());
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-            }
-        }
-
-        executorService.shutdown();
-        executorService.awaitTermination(3, TimeUnit.SECONDS);
-        return books;
-    }
-
-    /**
-     *
-     * @param IndexBook
-     * @param word
-     * @return
-     * @throws FileNotFoundException
-     */
-    private static AtomicInteger getOccurenceOfWordInFile(File IndexBook, String word) throws FileNotFoundException {
-        //Le pattern matching d'une ligne d'un index
-        Pattern p = Pattern.compile("^"+word+" : \\[.* : (.*)\\]");
-        AtomicInteger occurence= new AtomicInteger(0);
-
-        Scanner readbook = new Scanner(IndexBook);
-        while (readbook.hasNext()) {
-            Matcher m = p.matcher(readbook.nextLine());
-
-            if(m.find()) { // Il faut faire le find() avant le m.matches() (Pourquoi ? Black Magic)
-                m.matches(); //Toujours faire m.matches avant de faire m.groupe() (Je sais pas pourquoi?)
-                occurence = new AtomicInteger(Integer.parseInt(m.group(1))); //On récupère l'occurence du mot dans le texte
-                return occurence;
-            }
-
-        }
-        return new AtomicInteger(-1);
-    }
 
     /**
      * write an index into a text file (In the package : IndexBooks)
@@ -237,22 +148,6 @@ public class Indexation {
         writer.close();
     }
 
-    /**
-     *
-     * @param mymap
-     * @return mymap sorted in a descending order
-     */
-    public static LinkedHashMap<Integer, Integer> SortedMapDescending(Map<Integer, Integer> mymap){
-        //LinkedHashMap : Préserver l'ordre des élémenents
-        LinkedHashMap<Integer, Integer> reverseSortedMap = new LinkedHashMap<>();
-
-        //Use Comparator.reverseOrder() for reverse ordering
-        mymap.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
-        return reverseSortedMap;
-    }
 
     /**
      * Get the list of books from a regex
@@ -292,95 +187,14 @@ public class Indexation {
                 });
             }
         }
-        //Ordonnée par ordre décroissant: A faire
+
         executorService.shutdown();
         executorService.awaitTermination(3, TimeUnit.SECONDS);
 
         return books;
     }
 
-    /**
-     * Get books from keywords
-     * @param words List of keywords
-     * @return books (map) : key = idBook, value = Pair(number of keys words, sum of occurrence)
-     * @throws Exception
-     */
-    public static ConcurrentHashMap<Integer,Pair<Integer,Integer>> getBooksFromKeysWords(List<String> words) throws Exception{
-        //books : key = idBook, value = Pair(number of keys words, sum of occurrence)
-        ConcurrentHashMap<Integer,Pair<Integer,Integer>> books = new ConcurrentHashMap<Integer,Pair<Integer,Integer>>();
 
-        File folder = new File (absolutePathFile+"IndexBooks");
-        for (final File indexBook : folder.listFiles()) {
-            if (indexBook.isDirectory()) {
-                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
-            } else {
-                int id = Integer.parseInt(indexBook.getName().replace(".dex","")); //Id of the book
-
-                //Multithreading
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        int keywords = 0;
-                        int sumocc = 0;
-                        String word, line,occ;
-                        try {
-                            Scanner readbook = new Scanner(indexBook);
-                            while (readbook.hasNext()) {
-                                line = readbook.nextLine();
-                                word = line.split(" ")[0];
-                                for (String w: words) {
-                                    if(w.equals(word)){
-                                        keywords++;
-                                        occ = line.split(" ")[4].replace("]",""); // because there is a ']' in the end of the string
-                                        sumocc += Integer.parseInt(occ);
-                                        //System.out.println(id+" : "+w+ " -> "+occ);
-                                        break;
-                                    }
-                                }
-                            }
-                            //books.put(id,new Pair<Integer,Integer>(keywords.get(),sumocc.get()));
-                            books.put(id,new Pair<Integer,Integer>(keywords,sumocc));
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        }
-        //Ordonnée par ordre décroissant: A faire
-        executorService.shutdown();
-        executorService.awaitTermination(3, TimeUnit.SECONDS);
-
-        return books;
-    }
-
-    /**
-     * Sort an HashMap
-     * @param books
-     * @return LinkedHashMap (HashMap with order)
-     */
-    public static LinkedHashMap<Integer, Pair<Integer, Integer>> sortedBooksFromKeywords(ConcurrentHashMap<Integer,Pair<Integer,Integer>> books){
-        //LinkedHashMap : Préserver l'ordre des élémenents
-        LinkedHashMap<Integer, Pair<Integer, Integer>> sortedMap;
-
-        //Use Comparator.reverseOrder() for reverse ordering
-        sortedMap = books.entrySet()
-                         .stream()
-                         .sorted((b1,b2) -> compare(b1.getValue(),b2.getValue()))
-                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1,e2) -> e1, LinkedHashMap::new));
-
-        return sortedMap;
-    }
-
-    /**
-     * Compare 2 pair
-     * @param p1
-     * @param p2
-     * @return
-     */
-    private static int compare(Pair<Integer,Integer> p1, Pair<Integer,Integer> p2) {
-        return p1.getKey() == p2.getKey()? p2.getValue() - p1.getValue() : p2.getKey() - p1.getKey();
-    }
 
     /***************************************************************
      ********************* INDEX MAP FUNCTIONS *********************
@@ -408,7 +222,8 @@ public class Indexation {
             } else {
                 HashMap<String, Integer> indexf1 = fileToMap(f1);
                 int id = Integer.parseInt(f1.getName().replace(".dex","")); //Id of the book
-                writeMapToFile(indexf1,id);
+                //writeMapToFile(indexf1,id);
+                Serialisation.storeData(indexf1,id);
             }
             System.out.println("Traitement en cours : "+cpt+"/"+folder.listFiles().length);
             cpt++;
@@ -444,78 +259,7 @@ public class Indexation {
         return keywords;
     }
 
-    /**
-     * Write the HashMap into a file (Serialization)
-     * @param map
-     * @param idbook
-     */
-    public static void writeMapToFile(HashMap<String,Integer> map,int idbook) {
-        //write to file
-        String pathfile = absolutePathFile+"IndexMap/"+idbook+".map";
-        try {
-            File fileOne=new File(pathfile);
-            FileOutputStream fos=new FileOutputStream(fileOne);
-            ObjectOutputStream oos=new ObjectOutputStream(fos);
 
-            oos.writeObject(map);
-            oos.flush();
-            oos.close();
-            fos.close();
-        } catch(Exception e) {}
-    }
-
-    /**
-     *
-     * @param file
-     * @return the HashMap of the books file ( Hashmap of {word : occurences} )
-     * @throws Exception
-     */
-    public static HashMap<String,Integer> readFileToMap(File file) throws Exception {
-        //read from file
-        HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
-        try {
-
-            FileInputStream fis=new FileInputStream(file);
-            ObjectInputStream ois=new ObjectInputStream(fis);
-
-            mapInFile=(HashMap<String,Integer>)ois.readObject();
-
-            ois.close();
-            fis.close();
-            //print All data in MAP
-            return mapInFile;
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        throw new Exception("Can't readFileToMap : Something happend in Indexation.class");
-    }
-
-    /**
-     *
-     * @param idbook
-     * @return the HashMap of the idbook ( Hashmap of {word : occurences} )
-     * @throws Exception
-     */
-    public static HashMap<String,Integer> readFileToMap(int idbook) throws Exception {
-        //read from file
-        String pathfile = absolutePathFile+"IndexMap/"+idbook+".map";
-        HashMap<String,Integer> mapInFile= new HashMap<String, Integer>();
-        try {
-            File toRead=new File(pathfile);
-            FileInputStream fis=new FileInputStream(toRead);
-            ObjectInputStream ois=new ObjectInputStream(fis);
-
-            mapInFile=(HashMap<String,Integer>)ois.readObject();
-
-            ois.close();
-            fis.close();
-            //print All data in MAP
-            return mapInFile;
-        } catch(Exception e) {}
-
-        throw new Exception("Can't ReadIndexMap : Something happend in Indexation.class");
-    }
 
 
 

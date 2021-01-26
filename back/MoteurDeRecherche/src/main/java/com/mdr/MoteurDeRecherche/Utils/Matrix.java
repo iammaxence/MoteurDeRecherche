@@ -102,7 +102,7 @@ public class Matrix {
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-      /* Matrix m = new Matrix();
+       Matrix m = new Matrix();
 
          m.addToMatrix(1,20,0.7);
 
@@ -110,8 +110,8 @@ public class Matrix {
         m.addToMatrix(1,18,0.9);
         m.addToMatrix(1,36,0.2);
         m.addToMatrix(100000,36,0.5);
-
-        System.out.println(readMatrixFromFile().toString());*/
+        //Serialisation.storeMatrix(m);
+        //System.out.println(Serialisation.loadMatrix(new File(absolutePathFile+"MatrixJaccard/matrix.txt")).toString());
 
        //System.out.println(m.toString());
 
