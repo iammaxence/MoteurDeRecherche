@@ -19,10 +19,10 @@ public class TestDePerformances {
 
     /**
      * Comment effectuer les test lié à la recherche (pas de 200 jusqu'à 2000)
-     * 1-> Ajouter 2000 livres dans le dossier Books
-     * 2-> Executer rechercheClassique, puis rechercheMotsClefs, puis rechercheRegex, et enfin suppression de 200 livres
+     * 1 -> Ajouter 2000 livres dans le dossier Books
+     * 2 -> Executer rechercheClassique, puis rechercheMotsClefs, puis rechercheRegex, et enfin suppression de 200 livres
      * 2.1 -> Penser à récupérer le temps d'éxécution pour chaqu'un des algos
-     * 3-> On recommence l'étape 2 jusqu'à qu'il ne reste plus de livre dans la BD
+     * 3 -> On recommence l'étape 2 jusqu'à qu'il ne reste plus de livre dans la BD
      *
      */
     public static void main(String[] args) throws Exception {
@@ -40,7 +40,7 @@ public class TestDePerformances {
         //System.out.println(Search.rechercheRegex("r(O|l|e)+"));
 
         //Delete
-        //deleteBooks(200);
+        //deleteIndexBooks(200);
 
         long after = System.currentTimeMillis();
         double total = after-before;
@@ -57,8 +57,8 @@ public class TestDePerformances {
      ********************* METHODES DE PERFORMANCE********************
      ***************************************************************/
 
-    public static void deleteBooks(int nbBooks) throws Exception {
-        File folder = new File (absolutePathFile+"Books");
+    public static void deleteIndexBooks(int nbBooks) throws Exception {
+        File folder = new File (absolutePathFile+"IndexBooks");
 
         int cpt= 0;
         for (final File indexBook : folder.listFiles()) {
