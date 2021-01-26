@@ -34,19 +34,21 @@ public class TestDePerformances {
     public static void main(String[] args) throws Exception {
 
         long before = System.currentTimeMillis();
-        //Word
 
+        //Word
         //System.out.println(Search.rechercheClassique("fit"));
 
         // Multiples words
-        /*List<String> words = Arrays.asList("fit", "turn", "role");
-        System.out.println(Search.rechercheMotsClefs(words));*/
+        /*
+        List<String> words = Arrays.asList("fit", "turn", "role");
+        System.out.println(Search.rechercheMotsClefs(words));
+        */
 
         //Regex
         //System.out.println(Search.rechercheRegex("r(O|l|e)+"));
 
         //Delete
-        //deleteIndexBooks(200);
+        deleteIndexMap(200);
        /* HashMap<String,Integer> ma = new HashMap<String,Integer>();
         ma.put("Bonjour",3);
         storeData(ma,1);*/
@@ -67,14 +69,14 @@ public class TestDePerformances {
      ********************* METHODES DE PERFORMANCE********************
      ***************************************************************/
 
-    public static void deleteIndexBooks(int nbBooks) throws Exception {
-        File folder = new File (absolutePathFile+"IndexBooks");
+    public static void deleteIndexMap(int nbBooks) throws Exception {
+        File folder = new File (absolutePathFile+"IndexMap");
 
         int cpt= 0;
         for (final File indexBook : folder.listFiles()) {
 
             if (indexBook.isDirectory()) {
-                throw new Exception("Error Indexation.java : No folder expected in the directory : Books");
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexMap");
             } else {
                 if(cpt==nbBooks)
                     return;

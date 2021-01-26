@@ -78,7 +78,7 @@ public class Search {
         }
         //If it's really a regex them proceed
         if(regex.contains("|") || regex.contains("*") || regex.contains("+")){
-            List<Integer> books = Indexation.getBooksFromRegex(regex.toLowerCase());
+            List<Integer> books = SearchingAlgorithms.getBooksFromRegex(regex.toLowerCase());
             return new JSONObject().put("books",books);
         }
         //If it's a word then we use classic search

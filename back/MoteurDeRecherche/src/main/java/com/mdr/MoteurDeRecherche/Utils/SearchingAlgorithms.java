@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SearchingAlgorithms {
@@ -29,7 +31,7 @@ public class SearchingAlgorithms {
         File folder = new File (absolutePathFile+"IndexMap");
         for (final File indexBook : folder.listFiles()) {
             if (indexBook.isDirectory()) {
-                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexMap");
             } else {
                 int id = Integer.parseInt(indexBook.getName().replace(".map","")); //Id of the book
 
@@ -69,38 +71,85 @@ public class SearchingAlgorithms {
         //books : key = idBook, value = Pair(number of keys words, sum of occurrence)
         ConcurrentHashMap<Integer,Pair<Integer,Integer>> books = new ConcurrentHashMap<Integer,Pair<Integer,Integer>>();
 
-        File folder = new File (absolutePathFile+"IndexBooks");
+        File folder = new File (absolutePathFile+"IndexMap");
         for (final File indexBook : folder.listFiles()) {
             if (indexBook.isDirectory()) {
-                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexMap");
             } else {
-                int id = Integer.parseInt(indexBook.getName().replace(".dex","")); //Id of the book
+                int id = Integer.parseInt(indexBook.getName().replace(".map","")); //Id of the book
 
                 //Multithreading
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        int keywords = 0;
-                        int sumocc = 0;
-                        String word, line,occ;
+                        int keywords = 0; // count the number of key words in the book
+                        int sumocc = 0;   // sum of all the occurence of the key word in the book
+                        HashMap<String,Integer> bookWords = null;
                         try {
-                            Scanner readbook = new Scanner(indexBook);
-                            while (readbook.hasNext()) {
-                                line = readbook.nextLine();
-                                word = line.split(" ")[0];
-                                for (String w: words) {
-                                    if(w.equals(word)){
-                                        keywords++;
-                                        occ = line.split(" ")[4].replace("]",""); // because there is a ']' in the end of the string
-                                        sumocc += Integer.parseInt(occ);
-                                        //System.out.println(id+" : "+w+ " -> "+occ);
-                                        break;
-                                    }
+                            bookWords = Serialisation.loadData(indexBook);
+
+                            for(String word: words){
+                                if(bookWords.containsKey(word)){
+                                    keywords++;
+                                    sumocc += bookWords.get(word);
                                 }
                             }
-                            //books.put(id,new Pair<Integer,Integer>(keywords.get(),sumocc.get()));
-                            books.put(id,new Pair<Integer,Integer>(keywords,sumocc));
-                        } catch (FileNotFoundException e) {
+                            books.put(id, new Pair<>(keywords, sumocc));
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
+
+        executorService.shutdown();
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
+
+        return books;
+    }
+
+
+
+    /**
+     * Get the list of books from a regex
+     * @param regex
+     * @return the list of books that match the regex
+     */
+    public static List<Integer> getBooksFromRegex(String regex) throws Exception{
+        List<Integer> books = Collections.synchronizedList(new ArrayList<>());
+        Pattern p = Pattern.compile("^"+regex+"$");
+
+        File folder = new File (absolutePathFile+"IndexMap");
+        for (final File indexBook : folder.listFiles()) {
+            if (indexBook.isDirectory()) {
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexMap");
+            } else {
+                int id = Integer.parseInt(indexBook.getName().replace(".map","")); //Id of the book
+
+                //Multithreading
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        HashMap<String,Integer> bookWords = null;
+                        Matcher m;
+                        try {
+                            bookWords = Serialisation.loadData(indexBook);
+                            for(String word : bookWords.keySet()){
+                                m = p.matcher(word);
+                                //look if the word match : true -> add book
+                                if(m.find()){
+                                    books.add(id);
+                                    break;
+                                }
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (ClassNotFoundException e) {
                             e.printStackTrace();
                         }
                     }
