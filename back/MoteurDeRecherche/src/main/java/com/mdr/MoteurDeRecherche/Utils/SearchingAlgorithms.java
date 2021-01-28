@@ -95,7 +95,9 @@ public class SearchingAlgorithms {
                                     sumocc += bookWords.get(word);
                                 }
                             }
-                            books.put(id, new Pair<>(keywords, sumocc));
+                            if(keywords > 0){
+                                books.put(id, new Pair<>(keywords, sumocc));
+                            }
 
                         } catch (IOException e) {
                             e.printStackTrace();
