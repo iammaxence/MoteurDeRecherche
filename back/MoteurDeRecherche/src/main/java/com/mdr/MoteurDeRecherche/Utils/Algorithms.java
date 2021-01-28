@@ -17,22 +17,23 @@ public class Algorithms {
 
     public static void main(String[] args) throws Exception {
 
-        //Create indexMap file  : (We need indexing books)
-        //createIndexMapToFile();
-
         // Create all the vertex for all IndexBooks
 
         //Cache pour le calcul des distances de Jaccard (Deja crée dans le dossier MatrixJaccard)
-       /*
-        System.out.println("Récuperation du cache en cours...");
+
+
+        /*System.out.println("Récuperation du cache en cours...");
         HashMap<Integer, HashMap<Integer, Double>> cache = Matrix.readMatrixFromFile();
         System.out.println("Récuperation terminé. Traitement en cours..");
 
         Graph graph = createVertexForAllIndexBooks(0.70,cache);
-        System.out.println(closenessCentrality(graph,cache));*/
+        long before = System.currentTimeMillis();
+        System.out.println(closenessCentrality(graph,cache));
+
+        long after = System.currentTimeMillis();*/
 
         //Create matrix file of Jaccard
-        createMatrixJaccardToFile();
+        //createMatrixJaccardToFile();
 
         //Test matrix file of Jaccard
         //HashMap<Integer, HashMap<Integer, Double>> matrix = Matrix.readMatrixFromFile();
@@ -42,27 +43,28 @@ public class Algorithms {
 
         /*long before = System.currentTimeMillis();
 
-        File folder = new File("src/main/java/com/mdr/MoteurDeRecherche/IndexMap");
+        File folder = new File(absolutePathFile+"IndexMap");
         for (final File f1 : folder.listFiles()) {
-            Map<String,Integer> map1= readFileToMap(f1);
+            Map<String,Integer> map1= Serialisation.loadData(f1);
 
             for (final File f2 : folder.listFiles()) {
                 if(f2.getName().equals(f1.getName()))
                     continue;
-                Map<String,Integer> map2= readFileToMap(f2);
+                Map<String,Integer> map2= Serialisation.loadData(f2);
 
-                double res = distanceJaccard(map1.keySet(),map2.keySet());
+                double res = distanceJaccard(map1,map2);
                 System.out.println("distanceJaccard : "+res);
             }
 
-        }
+        }*/
 
-        long after = System.currentTimeMillis();
+
+       /* long after = System.currentTimeMillis();
         double total = after-before;
-        System.out.println("Temps : "+total/1000);*/
+        System.out.println("Temps : "+total/1000);
 
 
-       /* Map<String,Integer> f1= readFileToMap(1);
+        Map<String,Integer> f1= readFileToMap(1);
         Map<String,Integer> f2= readFileToMap(1);
         int cpt=0;
         //f2.keySet().forEach(x -> System.out.println(x));
@@ -153,22 +155,58 @@ public class Algorithms {
 
     /**
      * distance jaccard = (|A U B| - |A n B|)/ |A U B|
-     * @param f1
-     * @param f2
+     * @param set1
+     * @param set2
      * @return
      */
-    static public double distanceJaccard(Set<String> f1, Set<String>  f2) {
+    static public double distanceJaccard(Set<String> set1, Set<String>  set2) {
 
         // Le collect ne garanti pas le type du set (Si problème, à changer)
-        Set<String> intersection = f1.parallelStream()
+        Set<String> intersection = set1.parallelStream()
                 .collect(Collectors.toSet());;
-        intersection.retainAll(f2);
+        intersection.retainAll(set2);
 
-        double union = f1.size() + f2.size() - intersection.size();
+        double union = set1.size() + set2.size() - intersection.size();
 
         //System.out.println("Union : "+union+ " intersection : "+intersection.size());
         return (union - intersection.size()) / union;
     }
+
+    /**
+     *
+     * @param f1
+     * @param f2
+     * @return
+     */
+    static public double distanceJaccard(Map<String, Integer> f1, Map<String,Integer> f2) {
+
+
+
+        AtomicInteger max = new AtomicInteger();
+        AtomicInteger diff = new AtomicInteger();
+
+        ArrayList<String> monsetA= new ArrayList<String>();
+        ArrayList<String> monsetB= new ArrayList<String>();
+
+        for(Map.Entry<String,Integer> key : f1.entrySet()){
+            for(int i=0;i<key.getValue();i++){
+                monsetA.add(key.getKey());
+            }
+        }
+
+        for(Map.Entry<String,Integer> key : f2.entrySet()){
+            for(int i=0;i<key.getValue();i++){
+                monsetB.add(key.getKey());
+            }
+        }
+
+        ArrayList<String> intersection = (ArrayList<String>) monsetA.clone();
+        intersection.retainAll(monsetB);
+
+        double union = monsetA.size()+monsetB.size() - intersection.size();
+        return (union-intersection.size())/union;
+    }
+
 
     /**
      *  (Average time 3 days for 2000 books)

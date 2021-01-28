@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 public class SearchingAlgorithms {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
             "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
-
+    private static final int numOfCores = Runtime.getRuntime().availableProcessors();
     private static ExecutorService executorService = new ThreadPoolExecutor(
-            4,
-            4,
-            60,
+            numOfCores,
+            numOfCores,
+            10,
             TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
     /**
      *
@@ -56,7 +56,7 @@ public class SearchingAlgorithms {
             }
         }
 
-        executorService.shutdown();
+        //executorService.shutdown();
         executorService.awaitTermination(3, TimeUnit.SECONDS);
         return books;
     }
@@ -77,6 +77,7 @@ public class SearchingAlgorithms {
                 throw new Exception("Error Indexation.java : No folder expected in the directory : IndexMap");
             } else {
                 int id = Integer.parseInt(indexBook.getName().replace(".map","")); //Id of the book
+
 
                 //Multithreading
                 executorService.submit(new Runnable() {
@@ -106,8 +107,8 @@ public class SearchingAlgorithms {
             }
         }
 
-        executorService.shutdown();
-        executorService.awaitTermination(3, TimeUnit.SECONDS);
+        //executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.SECONDS);
 
         return books;
     }
@@ -157,7 +158,7 @@ public class SearchingAlgorithms {
             }
         }
 
-        executorService.shutdown();
+        //executorService.shutdown();
         executorService.awaitTermination(3, TimeUnit.SECONDS);
 
         return books;

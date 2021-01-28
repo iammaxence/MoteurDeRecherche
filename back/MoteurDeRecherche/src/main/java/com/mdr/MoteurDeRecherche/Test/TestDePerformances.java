@@ -33,6 +33,12 @@ public class TestDePerformances {
      */
     public static void main(String[] args) throws Exception {
 
+        /*System.out.println("Récuperation du cache en cours...");
+        HashMap<Integer, HashMap<Integer, Double>> cache = Matrix.readMatrixFromFile();
+        System.out.println("Récuperation terminé. Traitement en cours..");
+
+        Graph graph = Algorithms.createVertexForAllIndexBooks(0.70,cache);
+        */
         long before = System.currentTimeMillis();
 
         //Word
@@ -47,8 +53,13 @@ public class TestDePerformances {
         //Regex
         //System.out.println(Search.rechercheRegex("r(O|l|e)+"));
 
+        //ClosenessAlg
+
+        //System.out.println(Algorithms.closenessCentrality(graph,cache));
+
+
         //Delete
-        deleteIndexMap(200);
+        //deleteIndexMap(200);
        /* HashMap<String,Integer> ma = new HashMap<String,Integer>();
         ma.put("Bonjour",3);
         storeData(ma,1);*/

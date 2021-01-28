@@ -10,16 +10,19 @@ import org.json.JSONObject;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Search {
 
     public static void main(String[] args) throws Exception {
         long before = System.currentTimeMillis();
-        System.out.println(rechercheClassique("fit"));
+
+        //System.out.println(rechercheClassique("Ichabod"));
         /*List<String> words = Arrays.asList("fit", "turn", "role");
         System.out.println(rechercheMotsClefs(words));*/
         //System.out.println(rechercheRegex("r(O|l|e)+"));
+
         long after = System.currentTimeMillis();
         double total = after-before;
         System.out.println("Temps : "+total/1000);

@@ -36,7 +36,7 @@ public class Indexation {
 
         /* Create indexMap for all indexBooks */
 
-        //createIndexMapToFile();
+        createIndexMapToFile();
 
 
         /* Create an index for a File */
@@ -133,6 +133,12 @@ public class Indexation {
     private static void writeIntoFile(Map<String,Pair<Integer, Integer>> index, int id)
             throws IOException
     {
+        //Creation of the folder IndexMap if he doesn't exist
+        File theDir = new File(absolutePathFile+"IndexBooks");
+        if (!theDir.exists()){
+            theDir.mkdirs();
+        }
+
         int cpt=0;
         FileWriter writer = new FileWriter(
                 absolutePathFile+"IndexBooks/"+id+".dex");

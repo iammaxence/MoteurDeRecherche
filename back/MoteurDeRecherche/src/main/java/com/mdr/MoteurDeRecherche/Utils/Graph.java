@@ -32,12 +32,12 @@ public class Graph {
      * @throws Exception
      */
     public static Graph createIndexGraph() throws Exception {
-            File folder = new File (absolutePathFile+"IndexBooks");
+            File folder = new File (absolutePathFile+"IndexMap");
             for (final File indexBook : folder.listFiles()) {
                 if (indexBook.isDirectory()) {
-                    throw new Exception("Error Indexation.java : No folder expected in the directory : IndexBooks");
+                    throw new Exception("Error Indexation.java : No folder expected in the directory : IndexMap");
                 } else {
-                    int id = Integer.parseInt(indexBook.getName().replace(".dex",""));
+                    int id = Integer.parseInt(indexBook.getName().replace(".map",""));
                     adjacents.put(id, new HashSet<>());
                 }
             }

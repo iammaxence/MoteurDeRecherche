@@ -1,4 +1,4 @@
-
+Possibility of the database:
 
 
 Pour crée la Base de donnée de 0:
@@ -15,3 +15,15 @@ Pour crée la Base de donnée de 0:
 
 - Run createIndexMapToFile (class: utils/Indexation ) 
 
+
+
+Requetes possibles: 
+
+1. Recherche d'un mot simple:
+- http://localhost:8080/search?word=..
+
+2. Recherche de mots multiples:
+- http://localhost:8080/multiplesearch?words=..
+
+3. Recherche Regex
+- http://localhost:8080/regexsearch?regex=..
