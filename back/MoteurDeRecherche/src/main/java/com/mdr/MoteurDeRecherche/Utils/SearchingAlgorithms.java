@@ -124,7 +124,7 @@ public class SearchingAlgorithms {
      */
     public static List<Integer> getBooksFromRegex(String regex) throws Exception{
         List<Integer> books = Collections.synchronizedList(new ArrayList<>());
-        Pattern p = Pattern.compile("^"+regex+"$");
+        Automaton automate = new Automaton(regex.toLowerCase());
 
         File folder = new File (absolutePathFile+"IndexMap");
         for (final File indexBook : folder.listFiles()) {
@@ -138,13 +138,12 @@ public class SearchingAlgorithms {
                     @Override
                     public void run() {
                         HashMap<String,Integer> bookWords = null;
-                        Matcher m;
+
                         try {
                             bookWords = Serialisation.loadData(indexBook);
                             for(String word : bookWords.keySet()){
-                                m = p.matcher(word);
                                 //look if the word match : true -> add book
-                                if(m.find()){
+                                if(automate.match(word)){
                                     books.add(id);
                                     break;
                                 }
