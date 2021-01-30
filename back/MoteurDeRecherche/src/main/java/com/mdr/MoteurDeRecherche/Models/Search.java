@@ -1,13 +1,13 @@
 package com.mdr.MoteurDeRecherche.Models;
 
 import com.mdr.MoteurDeRecherche.Controllers.SearchEngine;
-import com.mdr.MoteurDeRecherche.Utils.BookInfo;
-import com.mdr.MoteurDeRecherche.Utils.Indexation;
-import com.mdr.MoteurDeRecherche.Utils.Pair;
-import com.mdr.MoteurDeRecherche.Utils.SearchingAlgorithms;
+import com.mdr.MoteurDeRecherche.Utils.*;
 import jdk.nashorn.internal.runtime.regexp.joni.SearchAlgorithm;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -17,11 +17,11 @@ public class Search {
 
     public static void main(String[] args) throws Exception {
         long before = System.currentTimeMillis();
-
         //System.out.println(rechercheClassique("Ichabod"));
-        /*List<String> words = Arrays.asList("fit", "turn", "role");
+
+        /*List<String> words = Arrays.asList("Ichabod","role","fit","john","katia");
         System.out.println(rechercheMotsClefs(words));*/
-        //System.out.println(rechercheRegex("r(O|l|e)+"));
+        //System.out.println(rechercheRegex("ro(l|e)*"));
 
         long after = System.currentTimeMillis();
         double total = after-before;
@@ -35,22 +35,20 @@ public class Search {
      * @throws Exception
      */
     public static JSONObject rechercheClassique(String word) throws Exception {
-        Set res = new HashSet<>();
         // Map<IdBooks,occurence>
+
         Map<Integer,Integer> map = SearchingAlgorithms.getListBooksWithSpecificWord(word.toLowerCase());
+        //Récuperation des livres
+        JSONObject res = new JSONObject().put("books",SearchingAlgorithms.SortedMapDescending(map).keySet());
 
-        //Conversion id en titre : Soit on le fait ici, soit dans le javascript (Average time = 51 sec)
+        //Suggestion des livres associé à la recherche utilisateur
+        res.put("suggestions", suggestion(map.keySet()));
 
-       /* for(Integer id : Indexation.SortedMapDescending(map).keySet()){
-            String title = BookInfo.bookName(id);
-            res.add(title);
-        }*/
-
-        return new JSONObject().put("books",SearchingAlgorithms.SortedMapDescending(map).keySet());
+        return res;
     }
 
     /**
-     * Search books from a list of key word (Average time 3,12 sec for 2000 books)
+     * Search books from a list of key word (Average time 3,1 sec for 2000 books)
      * @param words
      * @return
      * @throws Exception
@@ -65,8 +63,12 @@ public class Search {
         map = SearchingAlgorithms.getBooksFromKeysWords(words.stream().map(String::toLowerCase).collect(Collectors.toList()));
 
         //Rank by number of key word
+        JSONObject res = new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(map));
 
-        return new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(map));
+        //Suggestion des livres associé à la recherche utilisateur
+        res.put("suggestions", suggestion(map.keySet()));
+
+        return res;
     }
 
     /**
@@ -82,10 +84,30 @@ public class Search {
         //If it's really a regex them proceed
         if(regex.contains("|") || regex.contains("*") || regex.contains("+")){
             List<Integer> books = SearchingAlgorithms.getBooksFromRegex(regex.toLowerCase());
-            return new JSONObject().put("books",books);
+            JSONObject res= new JSONObject().put("books",books);
+            //Suggestion des livres associé à la recherche utilisateur
+            res.put("suggestions", suggestion(new LinkedHashSet<>(books)));
+            return res;
         }
         //If it's a word then we use classic search
         regex = regex.replaceAll("[.()]", "");
+
         return rechercheClassique(regex.toLowerCase());
+    }
+
+    /**
+     * Search the neighboors of the first ones books given in parameters
+     * @param books : Represent the books that have been found when a user make a search
+     * @return Set of books that can be suggest for the user
+     * @throws IOException
+     * @throws JSONException
+     */
+    public static Set<Integer> suggestion(Set<Integer> books) throws IOException, JSONException {
+        return SearchingAlgorithms.suggestion(books);
+    }
+
+    public static Map<Integer,Double> classement(Map<Integer,Integer> books) throws Exception {
+
+        return Algorithms.closenessCentrality(books.keySet());
     }
 }

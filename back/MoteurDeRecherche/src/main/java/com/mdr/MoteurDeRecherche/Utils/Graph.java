@@ -96,28 +96,6 @@ public class Graph {
             return adjacents;
         }
 
-        /**
-         * Write the graph into a file
-         * @param fileName
-         * @throws IOException
-         */
-        public void graphToFile(String fileName) throws IOException {
-            OutputStream flux=new FileOutputStream(fileName);
-            OutputStreamWriter ecriture = new OutputStreamWriter(flux);
-            BufferedWriter buff=new BufferedWriter(ecriture);
-            try {
-                for(Map.Entry<Integer,Set<Integer>> e:adjacents.entrySet()) {
-                    for(Integer v:e.getValue()) {
-                        if(e.getKey() < v) {
-                            buff.write(e.getKey() + " " + v + "\n");
-                        }
-                    }
-
-                }
-            }finally {
-                buff.close();
-            }
-        }
 
         public String toString() {
             StringBuilder sb = new StringBuilder();

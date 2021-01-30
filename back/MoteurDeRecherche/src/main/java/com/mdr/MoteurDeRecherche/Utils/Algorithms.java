@@ -1,5 +1,7 @@
 package com.mdr.MoteurDeRecherche.Utils;
 
+import com.fasterxml.jackson.core.util.InternCache;
+
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
@@ -19,59 +21,22 @@ public class Algorithms {
 
         // Create all the vertex for all IndexBooks
 
-        //Cache pour le calcul des distances de Jaccard (Deja crée dans le dossier MatrixJaccard)
 
+        /*long before = System.currentTimeMillis();
+        
+        HashSet<Integer> set = new HashSet<>();
+        set.add(1);
+        set.add(20);
+        set.add(16);
 
-        /*System.out.println("Récuperation du cache en cours...");
-        HashMap<Integer, HashMap<Integer, Double>> cache = Matrix.readMatrixFromFile();
-        System.out.println("Récuperation terminé. Traitement en cours..");
+        System.out.println(closenessCentrality(set));
 
-        Graph graph = createVertexForAllIndexBooks(0.70,cache);
-        long before = System.currentTimeMillis();
-        System.out.println(closenessCentrality(graph,cache));
-
-        long after = System.currentTimeMillis();*/
+        long after = System.currentTimeMillis();
+        double total = after-before;
+        System.out.println("Temps : "+total/1000);*/
 
         //Create matrix file of Jaccard
         //createMatrixJaccardToFile();
-
-        //Test matrix file of Jaccard
-        //HashMap<Integer, HashMap<Integer, Double>> matrix = Matrix.readMatrixFromFile();
-
-
-
-
-        /*long before = System.currentTimeMillis();
-
-        File folder = new File(absolutePathFile+"IndexMap");
-        for (final File f1 : folder.listFiles()) {
-            Map<String,Integer> map1= Serialisation.loadData(f1);
-
-            for (final File f2 : folder.listFiles()) {
-                if(f2.getName().equals(f1.getName()))
-                    continue;
-                Map<String,Integer> map2= Serialisation.loadData(f2);
-
-                double res = distanceJaccard(map1,map2);
-                System.out.println("distanceJaccard : "+res);
-            }
-
-        }*/
-
-
-       /* long after = System.currentTimeMillis();
-        double total = after-before;
-        System.out.println("Temps : "+total/1000);
-
-
-        Map<String,Integer> f1= readFileToMap(1);
-        Map<String,Integer> f2= readFileToMap(1);
-        int cpt=0;
-        //f2.keySet().forEach(x -> System.out.println(x));
-
-
-        double res = distanceJaccard(f1.keySet(),f2.keySet());
-        System.out.println("distanceJaccard : "+res);*/
 
 
     }
@@ -122,21 +87,26 @@ public class Algorithms {
      * @return hashmap that contain the list of vertex of a graph associate to their rank
      * @throws Exception
      */
-    static public LinkedHashMap<Integer,Double> closenessCentrality(Graph graph,
-                                                               HashMap<Integer, HashMap<Integer, Double>> matrixJaccard)
-            throws Exception {
+    static public LinkedHashMap<Integer,Double> closenessCentrality(Set<Integer> books) throws Exception {
 
         LinkedHashMap<Integer,Double> ranks = new LinkedHashMap<Integer, Double>();
+        Map<Integer,Set<Integer>> graph = Serialisation.loadGraph(
+                new File(absolutePathFile+"Graph/graph.txt"));
+        HashMap<Integer, HashMap<Integer, Double>> matrixJaccard = Matrix.readMatrixFromFile();
 
-        for(Map.Entry<Integer,Set<Integer>> key : graph.getAdjacents().entrySet()){
+        //OPour chaque livres, on calculs les distances avec ses voisins
+        for(Integer book : books){
+            Set<Integer> neighbours=  graph.get(book);
             double sumOfDist =0.0;
-            for(Integer in : key.getValue()){
-                sumOfDist+= matrixJaccard.get(key.getKey()).get(in);
+            for(Integer neighb : neighbours){
+                sumOfDist+= matrixJaccard.get(book).get(neighb);
             }
+
+            // On calcul le rank
             if (sumOfDist!=0)
-                ranks.put(key.getKey(),1/sumOfDist);
+                ranks.put(book,1/sumOfDist);
             else
-                ranks.put(key.getKey(),0.0);
+                ranks.put(book,0.0);
         }
 
         //Sorted by descending order

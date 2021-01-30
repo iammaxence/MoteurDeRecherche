@@ -14,11 +14,7 @@ public class SearchingAlgorithms {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
             "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
     private static final int numOfCores = Runtime.getRuntime().availableProcessors();
-    private static ExecutorService executorService = new ThreadPoolExecutor(
-            numOfCores,
-            numOfCores,
-            10,
-            TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+
     /**
      *
      * @param word
@@ -28,6 +24,8 @@ public class SearchingAlgorithms {
     public static ConcurrentHashMap<Integer,Integer> getListBooksWithSpecificWord(String word) throws Exception {
         ConcurrentHashMap<Integer,Integer> books = new ConcurrentHashMap<Integer,Integer>(); // NameOfTheBook : OccurenceOfTheWord
 
+        List<Thread> threads = new ArrayList<Thread>();
+
         File folder = new File (absolutePathFile+"IndexMap");
         for (final File indexBook : folder.listFiles()) {
             if (indexBook.isDirectory()) {
@@ -36,7 +34,7 @@ public class SearchingAlgorithms {
                 int id = Integer.parseInt(indexBook.getName().replace(".map","")); //Id of the book
 
                 //Multithreading
-                executorService.submit(new Runnable() {
+                threads.add(new Thread( new Runnable() {
                     @Override
                     public void run() {
                         HashMap<String,Integer> bookWords = null;
@@ -51,13 +49,19 @@ public class SearchingAlgorithms {
                             books.put(id, bookWords.get(word));
                         }
                     }
-                });
+                }));
 
             }
-        }
 
-        //executorService.shutdown();
-        executorService.awaitTermination(3, TimeUnit.SECONDS);
+        }
+        //Start threads
+        for(Thread t : threads){
+            t.start();
+        }
+        //Wait all threads
+        for(Thread t : threads){
+            t.join();
+        }
         return books;
     }
 
@@ -71,6 +75,8 @@ public class SearchingAlgorithms {
         //books : key = idBook, value = Pair(number of keys words, sum of occurrence)
         ConcurrentHashMap<Integer,Pair<Integer,Integer>> books = new ConcurrentHashMap<Integer,Pair<Integer,Integer>>();
 
+        List<Thread> threads = new ArrayList<Thread>();
+
         File folder = new File (absolutePathFile+"IndexMap");
         for (final File indexBook : folder.listFiles()) {
             if (indexBook.isDirectory()) {
@@ -80,7 +86,7 @@ public class SearchingAlgorithms {
 
 
                 //Multithreading
-                executorService.submit(new Runnable() {
+                threads.add(new Thread( new Runnable() {
                     @Override
                     public void run() {
                         int keywords = 0; // count the number of key words in the book
@@ -105,12 +111,19 @@ public class SearchingAlgorithms {
                             e.printStackTrace();
                         }
                     }
-                });
+                }));
+
+
             }
         }
-
-        //executorService.shutdown();
-        executorService.awaitTermination(1, TimeUnit.SECONDS);
+        //Start threads
+        for(Thread t : threads){
+            t.start();
+        }
+        //Wait all threads
+        for(Thread t : threads){
+            t.join();
+        }
 
         return books;
     }
@@ -125,6 +138,7 @@ public class SearchingAlgorithms {
     public static List<Integer> getBooksFromRegex(String regex) throws Exception{
         List<Integer> books = Collections.synchronizedList(new ArrayList<>());
         Automaton automate = new Automaton(regex.toLowerCase());
+        List<Thread> threads = new ArrayList<Thread>();
 
         File folder = new File (absolutePathFile+"IndexMap");
         for (final File indexBook : folder.listFiles()) {
@@ -134,7 +148,7 @@ public class SearchingAlgorithms {
                 int id = Integer.parseInt(indexBook.getName().replace(".map","")); //Id of the book
 
                 //Multithreading
-                executorService.submit(new Runnable() {
+                threads.add(new Thread( new Runnable() {
                     @Override
                     public void run() {
                         HashMap<String,Integer> bookWords = null;
@@ -155,14 +169,60 @@ public class SearchingAlgorithms {
                             e.printStackTrace();
                         }
                     }
-                });
+                }));
             }
         }
 
-        //executorService.shutdown();
-        executorService.awaitTermination(3, TimeUnit.SECONDS);
+        //Start threads
+        for(Thread t : threads){
+            t.start();
+        }
+        //Wait all threads
+        for(Thread t : threads){
+            t.join();
+        }
 
         return books;
+    }
+
+    /***************************************************************
+     ********************* SUGGESTION FUNCTION *********************
+     ***************************************************************/
+
+    public static Set<Integer> suggestion(Set<Integer> books) throws IOException { // total complexity = O(n)
+        Map<Integer,Set<Integer>> graph = Serialisation.loadGraph(
+                                            new File(absolutePathFile+"Graph/graph.txt"));
+
+        //On récupère seulement les 2 premiers voisins des premiers livres d'une recherche utilisateur
+        Set<Integer> sugg1=new HashSet<>();
+        Set<Integer> sugg2=new HashSet<>();
+
+
+        for(Integer book : books){ // O(n)
+            // Si les deux contiennent les voisins des livres les plus pertinant, on s'arrête
+            if(!sugg1.isEmpty() && !sugg2.isEmpty())
+                break;
+            // Si sugg1 n'a pas de livres, on lui ajoute les voisins du livre courant
+            if(sugg1.isEmpty()) {
+                sugg1 = graph.get(book);
+                continue; //Puis on passe au livre suivant
+            }
+            if(sugg2.isEmpty())
+                sugg2=graph.get(book);
+        }
+
+        //On check si l'un des deux est vide
+        if(sugg1.isEmpty()){
+
+            if( sugg2.isEmpty()){
+                return new HashSet<>(); // Aucune suggestion
+            }
+            return sugg2;
+        }
+
+        sugg1.addAll(sugg2); // O(n) dans le pire cas
+
+        return sugg1;
     }
 
     /***************************************************************

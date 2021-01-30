@@ -45,13 +45,11 @@ public class TestDePerformances {
         //System.out.println(Search.rechercheClassique("fit"));
 
         // Multiples words
-        /*
-        List<String> words = Arrays.asList("fit", "turn", "role");
-        System.out.println(Search.rechercheMotsClefs(words));
-        */
+        /*List<String> words = Arrays.asList("fit", "turn", "role");
+        System.out.println(Search.rechercheMotsClefs(words));*/
 
         //Regex
-        //System.out.println(Search.rechercheRegex("r(O|l|e)+"));
+        //System.out.println(Search.rechercheRegex("r(O|l|e)*"));
 
         //ClosenessAlg
 
@@ -60,9 +58,8 @@ public class TestDePerformances {
 
         //Delete
         //deleteIndexMap(200);
-       /* HashMap<String,Integer> ma = new HashMap<String,Integer>();
-        ma.put("Bonjour",3);
-        storeData(ma,1);*/
+
+
 
 
         long after = System.currentTimeMillis();
