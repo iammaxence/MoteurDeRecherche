@@ -8,7 +8,8 @@ import java.util.Properties;
 
 public class Matrix {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
+
     protected HashMap<Integer,HashMap<Integer,Double>> matrix= new HashMap<Integer, HashMap<Integer, Double>>();
 
     public Matrix(){

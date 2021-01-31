@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class Serialisation {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
 
 
 

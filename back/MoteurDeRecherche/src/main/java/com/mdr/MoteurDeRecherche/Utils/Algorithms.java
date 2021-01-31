@@ -15,9 +15,13 @@ import java.util.stream.Collectors;
  */
 public class Algorithms {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
 
     public static void main(String[] args) throws Exception {
+
+
+        Map<Integer,Set<Integer>> graph = Serialisation.loadGraph(
+                new File(absolutePathFile+"Graph/graph.txt"));
 
         // Create all the vertex for all IndexBooks
 

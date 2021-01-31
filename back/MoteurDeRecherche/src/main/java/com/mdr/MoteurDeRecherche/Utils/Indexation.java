@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class Indexation {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-                        "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
 
     public static void main(String[] args) throws Exception {
 
@@ -32,7 +32,6 @@ public class Indexation {
         /* Create indexMap for all indexBooks */
 
         createIndexMapToFile();
-
 
         /* Create an index for a File */
 

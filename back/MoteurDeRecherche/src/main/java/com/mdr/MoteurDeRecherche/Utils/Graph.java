@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Graph {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
 
         private static Map<Integer, Set<Integer>> adjacents = new HashMap<>();
 

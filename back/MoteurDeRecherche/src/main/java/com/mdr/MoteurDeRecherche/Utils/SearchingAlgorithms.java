@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
 
 public class SearchingAlgorithms {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
+
     private static final int numOfCores = Runtime.getRuntime().availableProcessors();
 
     /**

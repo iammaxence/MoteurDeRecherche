@@ -23,7 +23,8 @@ import java.util.regex.Pattern;
 
 public class BuildBooksDatabase {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
+
     private static ExecutorService executorService = new ThreadPoolExecutor(
             4,
             4,
@@ -33,7 +34,7 @@ public class BuildBooksDatabase {
     public static void main(String[] args) throws IOException, JSONException, InterruptedException {
         // Decommenter la ligne du bas pour lancer le téléchargement de la database
 
-        //System.out.println(buildBooksDatabase(2000).size());
+        System.out.println(buildBooksDatabase(2000).size());
 
         /*downloadBook("http://www.gutenberg.org/files/44203/44203-8.txt",44203);
         downloadBook("http://www.gutenberg.org/files/44204/44204-8.txt",44204);*/
@@ -257,6 +258,10 @@ public class BuildBooksDatabase {
         /*Pattern pattern = Pattern.compile(":");
         String[] matcher = pattern.split(name);*/
 
+        File theDir = new File(absolutePathFile+"Books");
+        if (!theDir.exists()){
+            theDir.mkdirs();
+        }
         String dir= absolutePathFile+"Books/"+id+".txt";
         FileUtils.copyURLToFile(new URL(urlbooks), new File(dir));
     }
