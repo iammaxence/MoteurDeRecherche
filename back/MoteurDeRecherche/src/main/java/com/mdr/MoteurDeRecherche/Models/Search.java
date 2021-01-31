@@ -85,7 +85,7 @@ public class Search {
         if(regex.contains("|") || regex.contains("*") || regex.contains("+")){
             ConcurrentHashMap<Integer,Pair<Integer,Integer>> books;
             books = SearchingAlgorithms.getBooksFromRegex(regex.toLowerCase());
-            JSONObject res= new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(books));
+            JSONObject res= new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(books).keySet());
 
             //Suggestion des livres associé à la recherche utilisateur
             res.put("suggestions", suggestion(books.keySet()));
@@ -109,7 +109,6 @@ public class Search {
     }
 
     public static Map<Integer,Double> classement(Map<Integer,Integer> books) throws Exception {
-
         return Algorithms.closenessCentrality(books.keySet());
     }
 }
