@@ -1,19 +1,17 @@
 package com.mdr.MoteurDeRecherche.Controllers;
 
 import com.mdr.MoteurDeRecherche.Models.Search;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
 @RestController
+@CrossOrigin(origins = "*",allowedHeaders = "*")
 public class SearchEngine {
 
     @GetMapping("/hello")
