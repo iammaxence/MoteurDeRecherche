@@ -46,6 +46,7 @@ public class Automaton {
 		
 		//Step 4
 		this.minimization();
+		//this.showMini();
 	}
 
 	/**
@@ -63,10 +64,13 @@ public class Automaton {
 		for(char c : chars){
 			letter = String.valueOf(c);
 			map = minDfa.get(current_state);
-			cpt--;
+			//If we find a letter that match :
 			if(map.containsKey(letter)){
+				cpt--;
 				current_state = map.get(letter);
+				// If end of the word and it's a finite state we find a word
 				if(cpt == 0 && minDfa.get(current_state).get("finite") == 1){
+					//System.out.println(word);
 					return true;
 				}
 			}

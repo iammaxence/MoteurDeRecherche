@@ -83,10 +83,12 @@ public class Search {
         }
         //If it's really a regex them proceed
         if(regex.contains("|") || regex.contains("*") || regex.contains("+")){
-            List<Integer> books = SearchingAlgorithms.getBooksFromRegex(regex.toLowerCase());
-            JSONObject res= new JSONObject().put("books",books);
+            ConcurrentHashMap<Integer,Pair<Integer,Integer>> books;
+            books = SearchingAlgorithms.getBooksFromRegex(regex.toLowerCase());
+            JSONObject res= new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(books));
+
             //Suggestion des livres associé à la recherche utilisateur
-            res.put("suggestions", suggestion(new LinkedHashSet<>(books)));
+            res.put("suggestions", suggestion(books.keySet()));
             return res;
         }
         //If it's a word then we use classic search

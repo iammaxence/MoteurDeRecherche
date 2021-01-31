@@ -135,8 +135,9 @@ public class SearchingAlgorithms {
      * @param regex
      * @return the list of books that match the regex
      */
-    public static List<Integer> getBooksFromRegex(String regex) throws Exception{
-        List<Integer> books = Collections.synchronizedList(new ArrayList<>());
+    public static ConcurrentHashMap<Integer,Pair<Integer,Integer>> getBooksFromRegex(String regex) throws Exception{
+        //books : key = idBook, value = Pair(number of match, sum of occurrence)
+        ConcurrentHashMap<Integer,Pair<Integer,Integer>> books = new ConcurrentHashMap<Integer,Pair<Integer,Integer>>();
         Automaton automate = new Automaton(regex.toLowerCase());
         List<Thread> threads = new ArrayList<Thread>();
 
@@ -152,15 +153,20 @@ public class SearchingAlgorithms {
                     @Override
                     public void run() {
                         HashMap<String,Integer> bookWords = null;
+                        int match = 0;
+                        int sumocc = 0;
 
                         try {
                             bookWords = Serialisation.loadData(indexBook);
                             for(String word : bookWords.keySet()){
                                 //look if the word match : true -> add book
                                 if(automate.match(word)){
-                                    books.add(id);
-                                    break;
+                                    match ++;
+                                    sumocc += bookWords.get(word);
                                 }
+                            }
+                            if(match > 0){
+                                books.put(id, new Pair<>(match, sumocc));
                             }
 
                         } catch (IOException e) {
