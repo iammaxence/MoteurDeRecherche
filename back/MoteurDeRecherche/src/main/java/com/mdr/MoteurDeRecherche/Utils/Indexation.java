@@ -31,7 +31,7 @@ public class Indexation {
 
         /* Create indexMap for all indexBooks */
 
-        //createIndexMapToFile();
+        createIndexMapToFile();
 
 
         /* Create an index for a File */

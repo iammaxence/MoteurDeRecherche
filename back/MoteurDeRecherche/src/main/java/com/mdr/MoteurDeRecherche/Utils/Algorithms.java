@@ -21,13 +21,13 @@ public class Algorithms {
 
         // Create all the vertex for all IndexBooks
 
-
-        /*long before = System.currentTimeMillis();
+/*
+        long before = System.currentTimeMillis();
         
         HashSet<Integer> set = new HashSet<>();
-        set.add(1);
-        set.add(20);
-        set.add(16);
+        set.add(2048);
+        set.add(41);
+        set.add(53259);
 
         System.out.println(closenessCentrality(set));
 
@@ -84,10 +84,34 @@ public class Algorithms {
 
     /**
      *
-     * @return hashmap that contain the list of vertex of a graph associate to their rank
+     * @param mongraph
+     * @param matrix
+     * @param noeud
+     * @return The rank of a node in a Graph
      * @throws Exception
      */
-    static public LinkedHashMap<Integer,Double> closenessCentrality(Set<Integer> books) throws Exception {
+    private static double closenessCentrality(Map<Integer,Set<Integer>> mongraph,
+                                             HashMap<Integer, HashMap<Integer, Double>> matrix,
+                                             int noeud)
+    throws Exception {
+
+        LinkedHashMap<Integer,Double> ranks = new LinkedHashMap<Integer, Double>();
+
+        double sumOfDist =0.0;
+        for(int sommet : mongraph.keySet()){
+            sumOfDist=matrix.get(noeud).get(sommet);
+        }
+
+        return 1/sumOfDist;
+
+    }
+
+    /**
+     * @param books
+     * @return hashmap that contain the list of books associate to their rank
+     * @throws Exception
+     */
+    public static  LinkedHashMap<Integer,Double> closenessCentrality(Set<Integer> books) throws Exception {
 
         LinkedHashMap<Integer,Double> ranks = new LinkedHashMap<Integer, Double>();
         Map<Integer,Set<Integer>> graph = Serialisation.loadGraph(
@@ -96,18 +120,13 @@ public class Algorithms {
 
         //OPour chaque livres, on calculs les distances avec ses voisins
         for(Integer book : books){
-            Set<Integer> neighbours=  graph.get(book);
-            double sumOfDist =0.0;
-            for(Integer neighb : neighbours){
-                sumOfDist+= matrixJaccard.get(book).get(neighb);
-            }
-
-            // On calcul le rank
+            double sumOfDist =closenessCentrality(graph,matrixJaccard,book);
             if (sumOfDist!=0)
                 ranks.put(book,1/sumOfDist);
             else
-                ranks.put(book,0.0);
+                ranks.put(book,0.0); // N'arrive jamais normalement
         }
+
 
         //Sorted by descending order
         LinkedHashMap<Integer, Double> reverseSortedMap = new LinkedHashMap<>();

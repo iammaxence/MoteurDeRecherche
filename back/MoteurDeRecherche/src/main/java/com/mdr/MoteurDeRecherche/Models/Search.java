@@ -63,7 +63,7 @@ public class Search {
         map = SearchingAlgorithms.getBooksFromKeysWords(words.stream().map(String::toLowerCase).collect(Collectors.toList()));
 
         //Rank by number of key word
-        JSONObject res = new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(map));
+        JSONObject res = new JSONObject().put("books",SearchingAlgorithms.sortedBooksFromKeywords(map).keySet());
 
         //Suggestion des livres associé à la recherche utilisateur
         res.put("suggestions", suggestion(map.keySet()));
