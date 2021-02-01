@@ -18,7 +18,7 @@ public class Search {
     public static void main(String[] args) throws Exception {
         long before = System.currentTimeMillis();
         //System.out.println(rechercheClassique("Ichabod"));
-
+        System.out.println(Algorithms.closenessCentrality(SearchingAlgorithms.getListBooksWithSpecificWord("Ichabod".toLowerCase()).keySet()));
         /*List<String> words = Arrays.asList("Ichabod","role","fit","john","katia");
         System.out.println(rechercheMotsClefs(words));*/
         //System.out.println(rechercheRegex("ro(l|e)*"));

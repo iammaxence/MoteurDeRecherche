@@ -34,10 +34,9 @@ public class BuildBooksDatabase {
     public static void main(String[] args) throws IOException, JSONException, InterruptedException {
         // Decommenter la ligne du bas pour lancer le téléchargement de la database
 
-        System.out.println(buildBooksDatabase(2000).size());
+        //System.out.println(buildBooksDatabase(2000).size());
 
-        /*downloadBook("http://www.gutenberg.org/files/44203/44203-8.txt",44203);
-        downloadBook("http://www.gutenberg.org/files/44204/44204-8.txt",44204);*/
+
 
     }
 

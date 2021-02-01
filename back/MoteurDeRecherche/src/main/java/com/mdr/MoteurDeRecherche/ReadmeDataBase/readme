@@ -1,17 +1,17 @@
 Possibility of the database:
 
 
-Pour crée la Base de donnée de 0:
+Pour crée la Base de donnée de 0: (You need to make all the step ! )
 
 1. Creation des livres
 
-- Run buildBooksDatabase ( class : Utils/BuildBooksDatabase )
+- Run buildBooksDatabase ( class : Utils/BuildBooksDatabase ) (/!\ It will take 55min )
 
 2. Creation des index pour chaques livres
 
-- Run indexBookDatabase ( class : Utils/Indexation )
+- Run indexBookDatabase ( class : Utils/Indexation ) (Average time = 10min)
 
-3. Creation des index en Map puis sérialisation en file
+3. Creation des index en Map puis sérialisation en file (Avergae time = 3 min)
 
 - Run createIndexMapToFile (class: utils/Indexation ) 
 

@@ -25,13 +25,15 @@ public class Indexation {
 
     public static void main(String[] args) throws Exception {
 
+        /* CHECK README BEFORE DECOMMENTING ! */
+
         /* Create index for all the books */
 
         //indexBookDatabase();
 
         /* Create indexMap for all indexBooks */
 
-        createIndexMapToFile();
+        //createIndexMapToFile();
 
         /* Create an index for a File */
 
@@ -55,7 +57,7 @@ public class Indexation {
 
 
     /**
-     * Create Index for all the books in the folder books (Average time = )
+     * Create Index for all the books in the folder books (Average time =10 min )
      * @throws Exception
      */
     public static void indexBookDatabase() throws Exception {

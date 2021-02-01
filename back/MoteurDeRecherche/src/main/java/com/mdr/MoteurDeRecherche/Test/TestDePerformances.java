@@ -14,23 +14,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class TestDePerformances {
     private static String absolutePathFile = Paths.get("").toAbsolutePath()+
-            "/back/MoteurDeRecherche/src/main/java/com/mdr/MoteurDeRecherche/";
+            "/src/main/java/com/mdr/MoteurDeRecherche/";
 
 
-    /**
-     * Comment effectuer les test lié à la recherche (pas de 200 jusqu'à 2000)
-     * 1 -> Ajouter 2000 livres dans le dossier Books
-     * 2 -> Executer rechercheClassique, puis rechercheMotsClefs, puis rechercheRegex, et enfin suppression de 200 livres
-     * 2.1 -> Penser à récupérer le temps d'éxécution pour chaqu'un des algos
-     * 3 -> On recommence l'étape 2 jusqu'à qu'il ne reste plus de livre dans la BD
-     *
-     */
+
     public static void main(String[] args) throws Exception {
 
         /*System.out.println("Récuperation du cache en cours...");
@@ -39,7 +30,7 @@ public class TestDePerformances {
 
         Graph graph = Algorithms.createVertexForAllIndexBooks(0.70,cache);
         */
-        long before = System.currentTimeMillis();
+
 
         //Word
         //System.out.println(Search.rechercheClassique("fit"));
@@ -59,19 +50,22 @@ public class TestDePerformances {
         //Delete
         //deleteIndexMap(200);
 
+        //testClosenessCentrality(1500);
 
 
+
+        /*Set<String> ensembleA = generateRandomWords(500000);
+        Set<String> ensembleB = generateRandomWords(500000);
+
+        long before = System.currentTimeMillis();
+
+        System.out.println(Algorithms.distanceJaccard(ensembleA, ensembleB));
 
         long after = System.currentTimeMillis();
-        double total = after-before;
-        System.out.println("Temps : "+total);
-    }
-
-    public static void testClosenessCentrality() throws Exception {
-
+        double total = after - before;
+        System.out.println("Temps : " + total);*/
 
     }
-
 
     /***************************************************************
      ********************* METHODES DE PERFORMANCE********************
@@ -97,6 +91,54 @@ public class TestDePerformances {
             cpt++;
         }
     }
+
+
+    public static void testClosenessCentrality(int nbbooks) throws Exception {
+        File folder = new File (absolutePathFile+"IndexMap");
+        Set<Integer> books = new HashSet<Integer>();
+        int cpt=0;
+        for (final File indexBook : folder.listFiles()) {
+
+            if (indexBook.isDirectory()) {
+                throw new Exception("Error Indexation.java : No folder expected in the directory : IndexMap");
+            } else {
+
+                if (cpt == nbbooks) {
+                    break;
+                }
+                int id = Integer.parseInt(indexBook.getName().replace(".map","")); //Id of the book
+                books.add(id);
+            }
+            cpt++;
+        }
+        Algorithms.closenessCentrality(books);
+    }
+
+
+
+    public static Set<String> generateRandomWords(int numberOfWords)
+    {
+        Set<String> randomStrings = new HashSet<String>();
+        Random random = new Random();
+
+        for(int i= 0;i< numberOfWords;i++) {
+
+            randomStrings.add(generateRandomWord(random.nextInt(8) + 3));
+        }
+        return randomStrings;
+    }
+
+    private static String generateRandomWord(int wordLength) {
+
+        Random r = new Random(); // Intialize a Random Number Generator with SysTime as the seed
+        StringBuilder sb = new StringBuilder(wordLength);
+        for(int i = 0; i < wordLength; i++) { // For each letter in the word
+            char tmp = (char) ('a' + r.nextInt('z' - 'a')); // Generate a letter between a and z
+            sb.append(tmp); // Add it to the String
+        }
+        return sb.toString();
+    }
+
 
     public static void nbBooks() throws Exception {
         File folder = new File (absolutePathFile+"Books");

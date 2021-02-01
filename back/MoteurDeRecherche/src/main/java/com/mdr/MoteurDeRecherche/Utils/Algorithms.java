@@ -19,32 +19,18 @@ public class Algorithms {
 
     public static void main(String[] args) throws Exception {
 
+        // La matrice de Jaccard
+        HashMap<Integer, HashMap<Integer, Double>> matrix = Serialisation.loadMatrix(
+                new File(absolutePathFile+"MatrixJaccard/matrix.txt"));
 
-        Map<Integer,Set<Integer>> graph = Serialisation.loadGraph(
-                new File(absolutePathFile+"Graph/graph.txt"));
+        //Create Graph of Jaccard
 
-        // Create all the vertex for all IndexBooks
+        //Graph g = createVertexForAllIndexBooks(0.7,matrix);
+        //Serialisation.storeGraph(g); //Create the file that contain the graph
 
-/*
-        long before = System.currentTimeMillis();
-        
-        HashSet<Integer> set = new HashSet<>();
-        set.add(2048);
-        set.add(41);
-        set.add(53259);
-
-        System.out.println(closenessCentrality(set));
-
-        long after = System.currentTimeMillis();
-        double total = after-before;
-        System.out.println("Temps : "+total/1000);*/
-
-        //Create matrix file of Jaccard
-        //createMatrixJaccardToFile();
 
 
     }
-
 
 
     /**
@@ -56,7 +42,7 @@ public class Algorithms {
      */
     public static Graph createVertexForAllIndexBooks(double constanteJaccard,
                                                      HashMap<Integer, HashMap<Integer, Double>> cache) throws Exception {
-
+        //Creation des sommets
         Graph graph = Graph.createIndexGraph();
         double before = System.currentTimeMillis();
         int cpt = 1;
@@ -103,7 +89,10 @@ public class Algorithms {
 
         double sumOfDist =0.0;
         for(int sommet : mongraph.keySet()){
-            sumOfDist=matrix.get(noeud).get(sommet);
+            // Dans le cas où le graph n'a pas de voisin, c'est un noeud qui n'est lié à personne
+            // (C'est du bricolage, désolé..Manque de temps..Il faudrait enlever les noeuds vide du graph)
+            if(!mongraph.get(sommet).isEmpty())
+                sumOfDist=matrix.get(noeud).get(sommet);
         }
 
         return 1/sumOfDist;
@@ -122,6 +111,9 @@ public class Algorithms {
                 new File(absolutePathFile+"Graph/graph.txt"));
         HashMap<Integer, HashMap<Integer, Double>> matrixJaccard = Matrix.readMatrixFromFile();
 
+
+        long before = System.currentTimeMillis();
+
         //OPour chaque livres, on calculs les distances avec ses voisins
         for(Integer book : books){
             double sumOfDist =closenessCentrality(graph,matrixJaccard,book);
@@ -139,6 +131,10 @@ public class Algorithms {
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
 
+        long after = System.currentTimeMillis();
+        double total = after-before;
+        System.out.println("Temps : "+total);
+
         return reverseSortedMap;
     }
 
@@ -152,7 +148,7 @@ public class Algorithms {
      * @param set2
      * @return
      */
-    static public double distanceJaccard(Set<String> set1, Set<String>  set2) {
+    public static double distanceJaccard(Set<String> set1, Set<String>  set2) {
 
         // Le collect ne garanti pas le type du set (Si problème, à changer)
         Set<String> intersection = set1.parallelStream()
@@ -166,12 +162,12 @@ public class Algorithms {
     }
 
     /**
-     *
+     * Distance of Jaccard (other version)
      * @param f1
      * @param f2
      * @return
      */
-    static public double distanceJaccard(Map<String, Integer> f1, Map<String,Integer> f2) {
+    public static double distanceJaccard(Map<String, Integer> f1, Map<String,Integer> f2) {
 
 
 
